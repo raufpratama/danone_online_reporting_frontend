@@ -1,0 +1,195 @@
+import React, { Component } from 'react'
+import { Text, View, Image } from 'react-native'
+import { createAppContainer, createSwitchNavigator } from 'react-navigation'
+import { createBottomTabNavigator } from 'react-navigation-tabs'
+import { createStackNavigator } from 'react-navigation-stack'
+import createMaterialTopTabNavigator from 'react-navigation-tabs/src/navigators/createMaterialTopTabNavigator'
+
+const colors = require('../../assets/utils/colors')
+
+import LoginScreen from '../../LoginScreen'
+
+import TugascontifeedScreen from '../Contifeed/TugascontifeedScreen'
+import RiwayatcontifeedScreen from '../Contifeed/RiwayatcontifeedScreen'
+import DetailtugasriwayatcontifeedScreen from '../Contifeed/DetailtugasriwayatcontifeedScreen'
+
+import TugascontiformScreen from '../Contiform/TugascontiformScreen'
+import RiwayatcontiformScreen from '../Contiform/RiwayatcontiformScreen'
+import DetailtugasriwayatcontiformScreen from '../Contiform/DetailtugasriwayatcontiformScreen'
+
+import TugasmodulfillScreen from '../Modulfill/TugasmodulfillScreen'
+import RiwayatmodulfillScreen from '../Modulfill/RiwayatmodulfillScreen'
+import DetailtugasriwayatmodulfillScreen from '../Modulfill/DetailtugasriwayatmodulfillScreen'
+import { Icon } from 'react-native-elements'
+
+const logos = [
+    {
+        active:require('../../assets/images/factory_active.png'),
+        placeholder:require('../../assets/images/industry_outline.png')
+    },
+    {
+        active:require('../../assets/images/industry_active.png'),
+        placeholder:require('../../assets/images/industry_outline.png')
+    },
+    {
+        active:require('../../assets/images/pabrik_active.png'),
+        placeholder:require('../../assets/images/pabrik_outline.png')
+    },
+]
+
+const ContifeedtabStack = createMaterialTopTabNavigator({
+    Tugas:TugascontifeedScreen,
+    Riwayat:RiwayatcontifeedScreen,
+},{
+    initialRouteName:'Tugas',
+    tabBarOptions:{
+        labelStyle:{
+            fontSize:16,
+        },
+        activeTintColor:colors.primary_color,
+        inactiveTintColor:colors.abu_subtitle,
+        indicatorStyle:{
+            backgroundColor:colors.primary_color  
+        },
+        style:{
+            backgroundColor:colors.putih,
+        },
+        upperCaseLabel:false
+    }
+})
+
+const ContiformtabStack = createMaterialTopTabNavigator({
+    Tugas:TugascontiformScreen,
+    Riwayat:RiwayatcontiformScreen,
+},{
+    initialRouteName:'Tugas',
+    tabBarOptions:{
+        labelStyle:{
+            fontSize:16,
+        },
+        activeTintColor:colors.primary_color,
+        inactiveTintColor:colors.abu_subtitle,
+        indicatorStyle:{
+            backgroundColor:colors.primary_color  
+        },
+        style:{
+            backgroundColor:colors.putih,
+        },
+        upperCaseLabel:false
+    }
+})
+
+const ModulfilltabStack = createMaterialTopTabNavigator({
+    Tugas:TugasmodulfillScreen,
+    Riwayat:RiwayatmodulfillScreen,
+},{
+    initialRouteName:'Tugas',
+    tabBarOptions:{
+        labelStyle:{
+            fontSize:16,
+        },
+        activeTintColor:colors.primary_color,
+        inactiveTintColor:colors.abu_subtitle,
+        indicatorStyle:{
+            backgroundColor:colors.primary_color  
+        },
+        style:{
+            backgroundColor:colors.putih,
+        },
+        upperCaseLabel:false
+    }
+})
+
+const ContifeedStack = createStackNavigator({
+    Mainstack:ContifeedtabStack,
+    Detail:DetailtugasriwayatcontifeedScreen
+},{
+    initialRouteName:'Mainstack',
+    defaultNavigationOptions:{
+        header:null
+    }
+})
+
+const ContiformStack = createStackNavigator({
+    Mainstack:{
+        screen:ContiformtabStack,
+        navigationOptions:{
+            title:'paten',
+            headerLeft:(<Icon type='ionicon' name='ios-home' containerStyle={{marginLeft:10}}/>),
+            headerStyle:{
+                elevation:0,
+                
+            }
+        }
+    },
+    Detail:{
+        screen:DetailtugasriwayatcontiformScreen,
+        navigationOptions:{
+            header:null
+        }
+    }
+},{
+    initialRouteName:'Mainstack',
+})
+
+const ModulfillStack = createStackNavigator({
+    Mainstack:ModulfilltabStack,
+    Detail:DetailtugasriwayatmodulfillScreen
+},{
+    initialRouteName:'Mainstack',
+    defaultNavigationOptions:{
+        header:null
+    }
+})
+
+const AppStack = createBottomTabNavigator({
+    Contifeed:{
+        screen:ContifeedStack,
+        navigationOptions: {
+            tabBarIcon: ({ focused,tintColor }) => {
+                // return <Icon type='material-community' name={focused ? 'home' : 'home-outline'} size={25} color={tintColor} />;
+                return <Image source={focused ? logos[0].active : logos[0].placeholder } style={{width:25,height:25}} resizeMode='contain'/>
+            }
+        }
+    },
+    Contiform:{
+        screen:ContiformStack,
+        navigationOptions:({navigation}) => {
+            return {
+                    tabBarIcon: ({ focused,tintColor }) => {
+                        // return <Icon type='material-community' name={focused ? 'home' : 'home-outline'} size={25} color={tintColor} />;
+                        return <Image source={focused ? logos[2].active : logos[2].placeholder } style={{width:25,height:25}} resizeMode='contain'/>
+                    },
+            }
+        }
+    },
+    Modulfill:{
+        screen:ModulfillStack,
+        navigationOptions: {
+            tabBarIcon: ({ focused,tintColor }) => {
+                // return <Icon type='material-community' name={focused ? 'home' : 'home-outline'} size={25} color={tintColor} />;
+                return <Image source={focused ? logos[1].active : logos[1].placeholder } style={{width:25,height:25}} resizeMode='contain'/>
+            }
+        }
+    },
+},{
+        tabBarOptions: {
+            activeTintColor: colors.primary_color,
+            inactiveTintColor: colors.abu_placeholder,
+            style:{
+                shadowOffset:{height:-1},shadowRadius:5,shadowOpacity:0.3,shadowColor:'#7a7a7a',borderTopWidth:0,elevation:10
+            },
+        }
+})
+
+const MainApp = createSwitchNavigator({
+    Login:LoginScreen,
+    App:AppStack
+}, {
+    initialRouteName:'App',
+    defaultNavigationOptions:{
+        header:null
+    }
+})
+
+export default createAppContainer(MainApp)
