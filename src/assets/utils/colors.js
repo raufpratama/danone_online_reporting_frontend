@@ -1,5 +1,5 @@
 const colors = {
-    primary_color:'#29c1c1',
+    primary_color:'#38B6FF',
     secondary_color:'',
     putih:'#ffff',
     kuning:'#F7CB00',

@@ -6,8 +6,11 @@ import { createStackNavigator } from 'react-navigation-stack'
 import createMaterialTopTabNavigator from 'react-navigation-tabs/src/navigators/createMaterialTopTabNavigator'
 
 const colors = require('../../assets/utils/colors')
+const danone_logo_online_report_logo = require('../../assets/images/AGUA.png')
 
-import LoginScreen from '../../LoginScreen'
+import LoginScreen from '../LoginScreen'
+
+import AuthScreen from '../AuthScreen'
 
 import TugascontifeedScreen from '../Contifeed/TugascontifeedScreen'
 import RiwayatcontifeedScreen from '../Contifeed/RiwayatcontifeedScreen'
@@ -101,24 +104,40 @@ const ModulfilltabStack = createMaterialTopTabNavigator({
 })
 
 const ContifeedStack = createStackNavigator({
-    Mainstack:ContifeedtabStack,
-    Detail:DetailtugasriwayatcontifeedScreen
+    Mainstack:{
+        screen:ContifeedtabStack,
+        navigationOptions:{
+            headerTitle:'Online Reporting',
+            headerTitleStyle:{
+                marginHorizontal:40,
+            },
+            headerLeft:(<Image source={danone_logo_online_report_logo} style={{width:72,height:72,marginHorizontal:10}} resizeMode='contain'/>),
+            headerStyle:{
+                elevation:0,
+            }
+        }
+    },
+    Detail:{
+        screen:DetailtugasriwayatcontifeedScreen,
+        navigationOptions:{
+            header:null
+        }
+    }
 },{
     initialRouteName:'Mainstack',
-    defaultNavigationOptions:{
-        header:null
-    }
 })
 
 const ContiformStack = createStackNavigator({
     Mainstack:{
         screen:ContiformtabStack,
         navigationOptions:{
-            title:'paten',
-            headerLeft:(<Icon type='ionicon' name='ios-home' containerStyle={{marginLeft:10}}/>),
+            headerTitle:'Online Reporting',
+            headerTitleStyle:{
+                marginHorizontal:40,
+            },
+            headerLeft:(<Image source={danone_logo_online_report_logo} style={{width:72,height:72,marginHorizontal:10}} resizeMode='contain'/>),
             headerStyle:{
                 elevation:0,
-                
             }
         }
     },
@@ -133,13 +152,27 @@ const ContiformStack = createStackNavigator({
 })
 
 const ModulfillStack = createStackNavigator({
-    Mainstack:ModulfilltabStack,
-    Detail:DetailtugasriwayatmodulfillScreen
+    Mainstack:{
+        screen:ModulfilltabStack,
+        navigationOptions:{
+            headerTitle:'Online Reporting',
+            headerTitleStyle:{
+                marginHorizontal:40,
+            },
+            headerLeft:(<Image source={danone_logo_online_report_logo} style={{width:72,height:72,marginHorizontal:10}} resizeMode='contain'/>),
+            headerStyle:{
+                elevation:0,
+            }
+        }
+    },
+    Detail:{
+        screen:DetailtugasriwayatmodulfillScreen,
+        navigationOptions:{
+            header:null
+        }
+    }
 },{
     initialRouteName:'Mainstack',
-    defaultNavigationOptions:{
-        header:null
-    }
 })
 
 const AppStack = createBottomTabNavigator({
@@ -183,10 +216,11 @@ const AppStack = createBottomTabNavigator({
 })
 
 const MainApp = createSwitchNavigator({
+    Auth:AuthScreen,
     Login:LoginScreen,
     App:AppStack
 }, {
-    initialRouteName:'App',
+    initialRouteName:'Auth',
     defaultNavigationOptions:{
         header:null
     }
