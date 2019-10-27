@@ -3,6 +3,7 @@ import { Text, View, FlatList, ActivityIndicator, ScrollView } from 'react-nativ
 import { Header, Icon, Divider, Button, CheckBox } from 'react-native-elements'
 import axios from 'axios';
 import { connect } from 'react-redux'
+import LoadingState from '../sub_components/LoadingState';
 
 const colors = require('../../assets/utils/colors')
 const route_url = require('../../assets/utils/urls')
@@ -22,6 +23,9 @@ class DetailtugasriwayatcontifeedScreen extends Component {
             wo_tasks:props.navigation.getParam('wo_tasks',''),
             header_title:props.navigation.getParam('header_title',''),
             detail_wo:'',
+            refresh:props.navigation.getParam('refresh',''),
+            isVisibleState:false,
+            done_items:[],
             loading:true,
         }
     }
@@ -29,13 +33,17 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     componentDidMount = () => {
         const { detail_wo,wo_tasks } = this.state;
         const { userDetail } = this.props
-
+        console.log(wo_tasks)
         axios.post(`${route_url.header}/wo/detail`,{ID:wo_tasks[0].ID,token:userDetail.res.token})
         .then(response=>{
             console.log(response.data)
             this.setState({detail_wo:response.data.res,loading:false})
         })
         .catch(e=>console.log(`terjadi kesalahan ${e}`))
+    }
+
+    _doneItem = (id) => {
+        this.setState({done_items:[...this.state.done_items,id]})
     }
 
     _renderItemInformasi = ({item}) => {
@@ -68,10 +76,10 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     }
 
     _renderItemTugasCheckbox = ({item}) => {
-        const { header_title } = this.state;
+        const { header_title, done_items } = this.state;
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
-                <CheckBox onPress={()=>this.props.navigation.navigate('Uploadphoto',{header_title,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Location + ' ' + item.Clitr.map(clitrs => ' - ' + clitrs) + ' - ' + item.What + ' - ' + item.Standart + item.ToolsMaterial.map(tools=> ' - ' + tools)})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Location + ' '}{item.Clitr.map(clitrs => ' - ' + clitrs)}{' - ' + item.What}{' - ' + item.Standart}{item.ToolsMaterial.map(tools=> ' - ' + tools)}</Text>}/>
+                <CheckBox checked={done_items.includes(item.ID)} onPress={()=>this.props.navigation.navigate('Uploadphoto',{header_title,done_item:this._doneItem,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Location + ' ' + item.Clitr.map(clitrs => ' - ' + clitrs) + ' - ' + item.What + ' - ' + item.Standart + item.ToolsMaterial.map(tools=> ' - ' + tools)})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Location + ' '}{item.Clitr.map(clitrs => ' - ' + clitrs)}{' - ' + item.What}{' - ' + item.Standart}{item.ToolsMaterial.map(tools=> ' - ' + tools)}</Text>}/>
             </View>
         )
     }
@@ -93,8 +101,43 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         )
     }
 
+    _alertAccept = () => {
+        Alert.alert('Perhatian','Apakah anda yakin ingin menghapus foto ?',[
+            {
+                text: 'YA', onPress: () => this._acceptWo()
+            },
+            {
+                text: 'TIDAK',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+            },
+            ],
+            {cancelable: false},
+        )
+        image == "image_before" ? this._menu.hide() : this.menu_.hide()
+    }
+
+    _acceptWo = () => {
+        const { wo_tasks, refresh, done_items, detail_wo } = this.state;
+        const { userDetail } = this.props;
+        if(wo_tasks[0].Status == 1 || wo_tasks[0].Status == 2 && done_items.length == detail_wo.length) {
+            this.setState({isVisibleState:true})
+            axios.post(`${route_url.header}/wo/${wo_tasks[0].Status == 1 ? 'accept' : 'close'}`,{ID:wo_tasks[0].ID,token:userDetail.res.token})
+            .then(response=>{
+                console.log(response.data)
+                alert('Work order berubah status menjadi dikerjakan')
+                refresh()
+                this.setState({isVisibleState:false})
+                this.props.navigation.goBack()
+            })
+            .catch(e=>console.log(`terjadi kesalahan ${e}`))
+        } else {
+            alert('Task work order ada yang belum selesai')
+        }
+    }
+
     render() {
-        const { wo_tasks, header_title, detail_wo, loading } = this.state;
+        const { wo_tasks, header_title, detail_wo, loading, isVisibleState } = this.state;
         return (
             <View style={{flex:1,backgroundColor:colors.background_screen}}>
                 <Header
@@ -128,7 +171,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={this._renderItemTugasCheckbox}
+                                    renderItem={wo_tasks[0].Status == 1 ? this._renderItemTugas:this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
@@ -136,9 +179,12 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         </View>
                     )}
                 </ScrollView>
-                <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
-                    <Button buttonStyle={{borderRadius:10,backgroundColor:colors.kuning}} title='Kerjakan'/>
-                </View>
+                {wo_tasks[0].Status == 1 || wo_tasks[0].Status == 2 ? (
+                    <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
+                        <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks[0].Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks[0].Status == 1 ? 'Kerjakan':'Close'}/>
+                    </View>
+                ): null}
+                <LoadingState isVisible={isVisibleState}/>
             </View>
         )
     }

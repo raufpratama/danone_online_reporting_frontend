@@ -31,6 +31,10 @@ class TugascontifeedScreen extends Component {
     }
 
     componentDidMount = async() => {
+        this._refresh()
+    }
+
+    _refresh = () => {
         const { userDetail } = this.props;
         console.log(userDetail)
         axios.post(`${route_url.header}/wo/list`,{area:area.contiform,token:userDetail.res.token})
@@ -45,7 +49,7 @@ class TugascontifeedScreen extends Component {
 
     _renderItem = ({item}) => {
         return (
-            <TouchableWithoutFeedback onPress={()=>this.props.navigation.navigate('Detail',{wo_tasks:this.state.wo_tasks,header_title:item.Area == "K442113" ? "Contiform" : item.Area == "K998848" ? "Contifeed" : "Modulfill"})}>
+            <TouchableWithoutFeedback onPress={()=>this.props.navigation.navigate('Detail',{refresh:this._refresh,wo_tasks:this.state.wo_tasks,header_title:item.Area == "K442113" ? "Contiform" : item.Area == "K998848" ? "Contifeed" : "Modulfill"})}>
                 <View style={{elevation:4,borderRadius:5,paddingHorizontal:13,paddingVertical:14}}>
                     <View style={{flexDirection:'row',height:160}}>
                         <View style={{width:135,justifyContent:'space-evenly'}}>
