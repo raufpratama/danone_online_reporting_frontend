@@ -26,10 +26,11 @@ class LoginScreen extends Component {
         const { NIK, password } = this.state;
         this.setState({isVisible:true})
         if(NIK.length > 0 && password.length >0) {
-            axios.post(`${route_url.header}/user/login`,{NIK,password})
+            axios.post(`${route_url.header}/user/login`,{NIK,Password:password})
             .then(async response=>{
                 if(response.data.res !== "NIK salah") {
-                    this.props.user_Login(response.data.res)
+                    console.log(response.data)
+                    this.props.user_Login(response.data)
                     await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(response.data))
                     this.setState({isVisible:false})
                     this.props.navigation.navigate('App')

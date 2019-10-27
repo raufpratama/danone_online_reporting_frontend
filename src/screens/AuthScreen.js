@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
 import { Text, View, ActivityIndicator, AsyncStorage } from 'react-native'
+import { connect } from 'react-redux'
+
+import { userLogin } from '../redux/actions/useractions'
 
 const environment = require('../assets/utils/environment')
 
@@ -10,8 +13,15 @@ class AuthScreen extends Component {
     }
 
     _checkLogin = async() => {
-        const login = await AsyncStorage.getItem(environment.ASYNC_USER_TOKEN)
-        this.props.navigation.navigate(login ? 'App':'Login')
+        const get_data = await AsyncStorage.getItem(environment.ASYNC_USER_TOKEN)
+        if(get_data) {
+            const result_data = JSON.parse(get_data)
+            console.log(result_data)
+            this.props.user_Login(result_data)
+            this.props.navigation.navigate('App')
+        } else {
+            this.props.navigation.navigate('Login')
+        }
     }
 
     render() {
@@ -23,4 +33,10 @@ class AuthScreen extends Component {
     }
 }
 
-export default AuthScreen
+const mapDispatchToProps = dispatch => {
+    return {
+        user_Login : (data)=>dispatch(userLogin(data))
+    }
+}
+
+export default connect(null,mapDispatchToProps)(AuthScreen)

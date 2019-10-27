@@ -4,6 +4,7 @@ import { createAppContainer, createSwitchNavigator } from 'react-navigation'
 import { createBottomTabNavigator } from 'react-navigation-tabs'
 import { createStackNavigator } from 'react-navigation-stack'
 import createMaterialTopTabNavigator from 'react-navigation-tabs/src/navigators/createMaterialTopTabNavigator'
+import { Icon } from 'react-native-elements'
 
 const colors = require('../../assets/utils/colors')
 const danone_logo_online_report_logo = require('../../assets/images/AGUA.png')
@@ -15,15 +16,17 @@ import AuthScreen from '../AuthScreen'
 import TugascontifeedScreen from '../Contifeed/TugascontifeedScreen'
 import RiwayatcontifeedScreen from '../Contifeed/RiwayatcontifeedScreen'
 import DetailtugasriwayatcontifeedScreen from '../Contifeed/DetailtugasriwayatcontifeedScreen'
+import UploadphotocontifeedScreen from '../Contifeed/UploadphotocontifeedScreen'
 
 import TugascontiformScreen from '../Contiform/TugascontiformScreen'
 import RiwayatcontiformScreen from '../Contiform/RiwayatcontiformScreen'
 import DetailtugasriwayatcontiformScreen from '../Contiform/DetailtugasriwayatcontiformScreen'
+import UploadphotocontiformScreen from '../Contiform/UploadphotocontiformScreen'
 
 import TugasmodulfillScreen from '../Modulfill/TugasmodulfillScreen'
 import RiwayatmodulfillScreen from '../Modulfill/RiwayatmodulfillScreen'
 import DetailtugasriwayatmodulfillScreen from '../Modulfill/DetailtugasriwayatmodulfillScreen'
-import { Icon } from 'react-native-elements'
+import UploadphotomodulfillScreen from '../Modulfill/UploadphotomodulfillScreen'
 
 const logos = [
     {
@@ -122,6 +125,12 @@ const ContifeedStack = createStackNavigator({
         navigationOptions:{
             header:null
         }
+    },
+    Uploadphoto:{
+        screen:UploadphotocontifeedScreen,
+        navigationOptions:{
+            header:null
+        }
     }
 },{
     initialRouteName:'Mainstack',
@@ -143,6 +152,12 @@ const ContiformStack = createStackNavigator({
     },
     Detail:{
         screen:DetailtugasriwayatcontiformScreen,
+        navigationOptions:{
+            header:null
+        }
+    },
+    Uploadphoto:{
+        screen:UploadphotocontiformScreen,
         navigationOptions:{
             header:null
         }
@@ -170,10 +185,64 @@ const ModulfillStack = createStackNavigator({
         navigationOptions:{
             header:null
         }
+    },
+    Uploadphoto:{
+        screen:UploadphotomodulfillScreen,
+        navigationOptions:{
+            header:null
+        }
     }
 },{
     initialRouteName:'Mainstack',
 })
+
+ContifeedStack.navigationOptions = ({navigation}) => {
+    let tabBarVisible;
+    if (navigation.state.routes.length > 1) {
+        navigation.state.routes.map(route => {
+        if (route.routeName === "Detail" || route.routeName === 'Uploadphoto' ) {
+            tabBarVisible = false;
+        } else {
+            tabBarVisible = true;
+        }
+        });
+    }
+    return {
+        tabBarVisible
+    };
+};
+
+ContiformStack.navigationOptions = ({navigation}) => {
+    let tabBarVisible;
+    if (navigation.state.routes.length > 1) {
+        navigation.state.routes.map(route => {
+        if (route.routeName === "Detail" || route.routeName === 'Uploadphoto') {
+            tabBarVisible = false;
+        } else {
+            tabBarVisible = true;
+        }
+        });
+    }
+    return {
+        tabBarVisible
+    };
+};
+
+ModulfillStack.navigationOptions = ({navigation}) => {
+    let tabBarVisible;
+    if (navigation.state.routes.length > 1) {
+        navigation.state.routes.map(route => {
+        if (route.routeName === "Detail" || route.routeName === 'Uploadphoto') {
+            tabBarVisible = false;
+        } else {
+            tabBarVisible = true;
+        }
+        });
+    }
+    return {
+        tabBarVisible
+    };
+};
 
 const AppStack = createBottomTabNavigator({
     Contifeed:{
