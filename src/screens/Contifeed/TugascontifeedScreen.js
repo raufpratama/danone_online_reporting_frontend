@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, TouchableWithoutFeedback } from 'react-native'
+import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, TouchableWithoutFeedback, Alert } from 'react-native'
 import { connect } from 'react-redux'
 import axios from 'axios'
 
-import { userLogin } from '../../redux/actions/useractions'
+import { userLogin, userLogout } from '../../redux/actions/useractions'
 
 const dummy_wo_task = [
     {
@@ -34,14 +34,35 @@ class TugascontifeedScreen extends Component {
         this._refresh()
     }
 
+    _alertLogout = () => {
+        Alert.alert('Perhatian','Apakah anda yakin ingin keluar ?',[
+            {
+                text: 'YA', onPress: () => this._logout()
+            },
+            {
+                text: 'TIDAK',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+            },
+            ],
+            {cancelable: false},
+        )
+    }
+
+    _logout = async() => {
+        await AsyncStorage.removeItem(environment.ASYNC_USER_TOKEN)
+        this.props.user_Logout([])
+        this.props.navigation.navigate('Login')
+    }
+
     _refresh = () => {
         const { userDetail } = this.props;
-        console.log(userDetail)
-        axios.post(`${route_url.header}/wo/list`,{area:area.contiform,token:userDetail.res.token})
+        console.log(userDetail.res.token)
+        axios.get(`${route_url.header}/wo/list/${area.contiform}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             this.setState({
-            wo_tasks:response.data.res,
+            wo_tasks:response.data.res.filter(ress=>ress.Status !== 3),
             loading:false
         })})
         .catch(e=>console.log(`terjadi kesalahan ${e}`))
@@ -96,10 +117,10 @@ class TugascontifeedScreen extends Component {
                 ) : (
                     <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
                         <Image source={list_placeholder} style={{width:136,height:185}} resizeMode='contain'/>
-                        <Text style={{fontSize:12,width:254,color:colors.abu_placeholder}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
+                        <Text style={{fontSize:12,width:254,color:colors.abu_placeholder,textAlign:'center'}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
                     </View>
                 )}
-                
+                <Text onPress={this._alertLogout} style={{color:colors.abu_placeholder,textDecorationLine:'underline',alignSelf:'center',paddingBottom:20}}>Logout</Text>
             </View>
         )
     }
@@ -113,7 +134,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        user_Login : (data)=>dispatch(userLogin(data))
+        user_Login : (data)=>dispatch(userLogin(data)),
+        user_Logout:(data)=>dispatch(userLogout(data))
     }
 }
 

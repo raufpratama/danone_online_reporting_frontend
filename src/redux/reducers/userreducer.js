@@ -1,5 +1,6 @@
 const userState = {
     user_detail:{},
+    form:'',
     isLogin:false
 }
 
@@ -16,6 +17,11 @@ export default userreducer = (state=userState,action) => {
                 ...state,
                 user_detail:{},
                 isLogin:false,
+            }
+        case "ADD_FORM_WO":
+            return {
+                ...state,
+                form:action.payload,
             }
         default:
             return state;

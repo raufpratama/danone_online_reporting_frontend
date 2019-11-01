@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, ActivityIndicator, ScrollView } from 'react-native'
+import { Text, View, FlatList, ActivityIndicator, ScrollView, Alert } from 'react-native'
 import { Header, Icon, Divider, Button, CheckBox } from 'react-native-elements'
 import axios from 'axios';
 import { connect } from 'react-redux'
+
 import LoadingState from '../sub_components/LoadingState';
+import { updateFORM, updateWO } from '../../redux/actions/formwoactions'
 
 const colors = require('../../assets/utils/colors')
 const route_url = require('../../assets/utils/urls')
@@ -32,14 +34,21 @@ class DetailtugasriwayatcontifeedScreen extends Component {
 
     componentDidMount = () => {
         const { detail_wo,wo_tasks } = this.state;
-        const { userDetail } = this.props
+        const { userDetail, update_WO, wo } = this.props
         console.log(wo_tasks)
-        axios.post(`${route_url.header}/wo/detail`,{ID:wo_tasks[0].ID,token:userDetail.res.token})
-        .then(response=>{
-            console.log(response.data)
-            this.setState({detail_wo:response.data.res,loading:false})
-        })
-        .catch(e=>console.log(`terjadi kesalahan ${e}`))
+        if(wo.length > 0 && wo.id_wo == wo_tasks[0].ID) {
+            this.setState({detail_wo:wo.res,loading:false})
+        } else {
+            axios.get(`${route_url.header}/wo/detail/${wo_tasks[0].ID}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+            .then(response=>{
+                console.log(response.data)
+                const temp = response.data
+                temp.id_wo = wo_tasks[0].ID
+                update_WO(temp)
+                this.setState({detail_wo:response.data.res,loading:false})
+            })
+            .catch(e=>console.log(`terjadi kesalahan ${e}`))
+        }
     }
 
     _doneItem = (id) => {
@@ -102,7 +111,8 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     }
 
     _alertAccept = () => {
-        Alert.alert('Perhatian','Apakah anda yakin ingin menghapus foto ?',[
+        const { wo_tasks } = this.state; 
+        Alert.alert('Perhatian',wo_tasks[0].Status == 1 ? 'Apakah anda yakin ingin memulai WO ?' : 'Apakah anda yakin ingin menutup WO',[
             {
                 text: 'YA', onPress: () => this._acceptWo()
             },
@@ -114,15 +124,17 @@ class DetailtugasriwayatcontifeedScreen extends Component {
             ],
             {cancelable: false},
         )
-        image == "image_before" ? this._menu.hide() : this.menu_.hide()
+        // image == "image_before" ? this._menu.hide() : this.menu_.hide()
     }
 
     _acceptWo = () => {
         const { wo_tasks, refresh, done_items, detail_wo } = this.state;
         const { userDetail } = this.props;
+        console.log(userDetail)
+        console.log(`${route_url.header}/wo/${wo_tasks[0].Status == 1 ? 'accept' : 'close'}/${wo_tasks[0].ID}`)
         if(wo_tasks[0].Status == 1 || wo_tasks[0].Status == 2 && done_items.length == detail_wo.length) {
             this.setState({isVisibleState:true})
-            axios.post(`${route_url.header}/wo/${wo_tasks[0].Status == 1 ? 'accept' : 'close'}`,{ID:wo_tasks[0].ID,token:userDetail.res.token})
+            axios.get(`${route_url.header}/wo/${wo_tasks[0].Status == 1 ? 'accept' : 'close'}/${wo_tasks[0].ID}`,{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
             .then(response=>{
                 console.log(response.data)
                 alert('Work order berubah status menjadi dikerjakan')
@@ -142,7 +154,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
             <View style={{flex:1,backgroundColor:colors.background_screen}}>
                 <Header
                     placement='left'
-                    leftComponent={<Icon type='ionicon' name='ios-arrow-back' containerStyle={{marginLeft:10}}/>}
+                    leftComponent={<Icon onPress={()=>this.props.navigation.goBack()} type='ionicon' name='ios-arrow-back' containerStyle={{marginLeft:10}}/>}
                     centerComponent={<HeaderTitle subtitle={header_title}/>}
                     containerStyle={{backgroundColor:colors.putih}}
                 />
@@ -171,7 +183,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={wo_tasks[0].Status == 1 ? this._renderItemTugas:this._renderItemTugasCheckbox}
+                                    renderItem={wo_tasks[0].Status == 1 || wo_tasks[0].Status == 3 ? this._renderItemTugas:this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
@@ -192,8 +204,15 @@ class DetailtugasriwayatcontifeedScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        userDetail:state.user_detail
+        userDetail:state.userreducer.user_detail,
+        wo:state.formworeducer.wo
     }
 }
 
-export default connect(mapStateToProps)(DetailtugasriwayatcontifeedScreen)
+const mapDispatchToProps = dispatch => {
+    return {
+        update_WO:(data)=>dispatch(updateWO(data)),
+    }
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(DetailtugasriwayatcontifeedScreen)

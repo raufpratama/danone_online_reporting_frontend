@@ -5,6 +5,7 @@ import ImagePicker from 'react-native-image-picker'
 import Menu, { MenuItem, MenuDivider } from 'react-native-material-menu'
 import LoadingState from '../sub_components/LoadingState'
 import axios from 'axios'
+import { connect } from 'react-redux'
 
 const colors = require('../../assets/utils/colors')
 const plus = require('../../assets/images/plus.png')
@@ -75,9 +76,11 @@ class UploadphotocontifeedScreen extends Component {
 
     _uploadPhoto = () => {
         const { image_after, image_before,wo_item_id,form_data_before,form_data_after, done_item } = this.state;
+        const { userDetail } = this.props;
         if(image_after.length > 0 && image_before.length >0) {
             this.setState({isVisibleState:true})
             axios({
+                headers:{'Authorization':`Bearer ${userDetail.res.token}`},
                 method:'POST',
                 url:`${route_url.header}/wo/picBefore/${wo_item_id}`,
                 data:form_data_before
@@ -91,6 +94,7 @@ class UploadphotocontifeedScreen extends Component {
             .catch(e=>console.log(`terjadi kesalahan ${e}`))
 
             axios({
+                headers:{'Authorization':`Bearer ${userDetail.res.token}`},
                 method:'POST',
                 url:`${route_url.header}/wo/picAfter/${wo_item_id}`,
                 data:form_data_after
@@ -171,7 +175,7 @@ class UploadphotocontifeedScreen extends Component {
                     <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                     <View style={{flexDirection:'row'}}>
                         {image_before.length > 0 ? (
-                            <Image source={{uri:image_before}} style={{borderWidth:1,width:100,height:130,borderRadius:5}} resizeMode='cover'/>
+                            <Image source={{uri:`http://172.20.10.2:3000/${image_before}`}} style={{borderWidth:1,width:100,height:130,borderRadius:5}} resizeMode='cover'/>
                         ) : (
                             <TouchableWithoutFeedback onPress={()=>this._openCamera("image_before")}>
                                 <View style={{justifyContent:'center',alignItems:'center',width:100,height:130,borderRadius:1,borderWidth:1,borderStyle:'dashed',borderColor:colors.abu_placeholder}}>
@@ -213,4 +217,10 @@ class UploadphotocontifeedScreen extends Component {
     }
 }
 
-export default UploadphotocontifeedScreen
+const mapStateToProps = state => {
+    return {
+        userDetail:state.user_detail
+    }
+}
+
+export default connect(mapStateToProps)(UploadphotocontifeedScreen)
