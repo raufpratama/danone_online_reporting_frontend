@@ -33,10 +33,15 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     }
 
     componentDidMount = () => {
+        console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
+        console.disableYellowBox = true;
         const { detail_wo,wo_tasks } = this.state;
         const { userDetail, update_WO, wo } = this.props
-        console.log(wo_tasks)
-        if(wo.length > 0 && wo.id_wo == wo_tasks[0].ID) {
+        console.log(detail_wo)
+        console.log(wo.length > 0 && wo.id_wo == wo_tasks[0].ID)
+        console.log(`id wo ${wo_tasks[0].ID}`)
+        console.log(' ini wo di redux ' + JSON.stringify(wo))
+        if(Object.keys(wo).length > 0 && wo.id_wo == wo_tasks[0].ID) {
             this.setState({detail_wo:wo.res,loading:false})
         } else {
             axios.get(`${route_url.header}/wo/detail/${wo_tasks[0].ID}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
@@ -49,10 +54,6 @@ class DetailtugasriwayatcontifeedScreen extends Component {
             })
             .catch(e=>console.log(`terjadi kesalahan ${e}`))
         }
-    }
-
-    _doneItem = (id) => {
-        this.setState({done_items:[...this.state.done_items,id]})
     }
 
     _renderItemInformasi = ({item}) => {
@@ -86,9 +87,11 @@ class DetailtugasriwayatcontifeedScreen extends Component {
 
     _renderItemTugasCheckbox = ({item}) => {
         const { header_title, done_items } = this.state;
+        const { form } = this.props;
+        console.log(`ini item ${JSON.stringify(this._filterObject(item.ID))}`)
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
-                <CheckBox checked={done_items.includes(item.ID)} onPress={()=>this.props.navigation.navigate('Uploadphoto',{header_title,done_item:this._doneItem,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Location + ' ' + item.Clitr.map(clitrs => ' - ' + clitrs) + ' - ' + item.What + ' - ' + item.Standart + item.ToolsMaterial.map(tools=> ' - ' + tools)})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Location + ' '}{item.Clitr.map(clitrs => ' - ' + clitrs)}{' - ' + item.What}{' - ' + item.Standart}{item.ToolsMaterial.map(tools=> ' - ' + tools)}</Text>}/>
+                <CheckBox checked={form.includes(item.ID)} onPress={()=>this.props.navigation.navigate('Uploadphoto',{general_wo:this._filterObject(item.ID),header_title,done_item:this._doneItem,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Location + ' ' + item.Clitr.map(clitrs => ' - ' + clitrs) + ' - ' + item.What + ' - ' + item.Standart + item.ToolsMaterial.map(tools=> ' - ' + tools)})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Location + ' '}{item.Clitr.map(clitrs => ' - ' + clitrs)}{' - ' + item.What}{' - ' + item.Standart}{item.ToolsMaterial.map(tools=> ' - ' + tools)}</Text>}/>
             </View>
         )
     }
@@ -110,6 +113,11 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         )
     }
 
+    _filterObject = (id) => {
+        const filter_data = this.props.wo.res.filter(ids => {return ids.ID == id})
+        return filter_data
+    }
+
     _alertAccept = () => {
         const { wo_tasks } = this.state; 
         Alert.alert('Perhatian',wo_tasks[0].Status == 1 ? 'Apakah anda yakin ingin memulai WO ?' : 'Apakah anda yakin ingin menutup WO',[
@@ -129,15 +137,15 @@ class DetailtugasriwayatcontifeedScreen extends Component {
 
     _acceptWo = () => {
         const { wo_tasks, refresh, done_items, detail_wo } = this.state;
-        const { userDetail } = this.props;
+        const { userDetail, form } = this.props;
         console.log(userDetail)
         console.log(`${route_url.header}/wo/${wo_tasks[0].Status == 1 ? 'accept' : 'close'}/${wo_tasks[0].ID}`)
-        if(wo_tasks[0].Status == 1 || wo_tasks[0].Status == 2 && done_items.length == detail_wo.length) {
+        if(wo_tasks[0].Status == 1 || wo_tasks[0].Status == 2 && form.length == detail_wo.length) {
             this.setState({isVisibleState:true})
             axios.get(`${route_url.header}/wo/${wo_tasks[0].Status == 1 ? 'accept' : 'close'}/${wo_tasks[0].ID}`,{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
             .then(response=>{
                 console.log(response.data)
-                alert('Work order berubah status menjadi dikerjakan')
+                alert(`Work order berubah status menjadi ${wo_tasks[0].Status == 1 ? 'dikerjakan':'close'}`)
                 refresh()
                 this.setState({isVisibleState:false})
                 this.props.navigation.goBack()
@@ -205,7 +213,8 @@ class DetailtugasriwayatcontifeedScreen extends Component {
 const mapStateToProps = state => {
     return {
         userDetail:state.userreducer.user_detail,
-        wo:state.formworeducer.wo
+        wo:state.formworeducer.wo,
+        form:state.formworeducer.form
     }
 }
 

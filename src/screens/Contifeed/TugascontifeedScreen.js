@@ -31,7 +31,10 @@ class TugascontifeedScreen extends Component {
     }
 
     componentDidMount = async() => {
+        console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
+    console.disableYellowBox = true;
         this._refresh()
+        console.log(this.props.userDetail)
     }
 
     _alertLogout = () => {
@@ -128,7 +131,7 @@ class TugascontifeedScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        userDetail:state.user_detail
+        userDetail:state.userreducer.user_detail
     }
 }
 

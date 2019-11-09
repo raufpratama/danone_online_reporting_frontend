@@ -1,11 +1,14 @@
 import React, { Component } from 'react'
-import { Text, View, TouchableWithoutFeedback, Alert } from 'react-native'
+import { Text, View, TouchableWithoutFeedback, Alert, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import { Header, Icon, Divider, Button, Image } from 'react-native-elements'
 import ImagePicker from 'react-native-image-picker'
 import Menu, { MenuItem, MenuDivider } from 'react-native-material-menu'
-import LoadingState from '../sub_components/LoadingState'
 import axios from 'axios'
+import ImageView from 'react-native-image-view'
 import { connect } from 'react-redux'
+
+import LoadingState from '../sub_components/LoadingState'
+import { updateWO, updateFORM } from '../../redux/actions/formwoactions'
 
 const colors = require('../../assets/utils/colors')
 const plus = require('../../assets/images/plus.png')
@@ -26,6 +29,25 @@ const HeaderTitle = ({subtitle}) => {
     )
 }
 
+const Images = (uri1,uri2) => {
+    const image = [
+        {
+            source:{
+                uri:uri1
+            },
+            title:'Image Before'
+        },
+        {
+            source:{
+                uri:uri2
+            },
+            title:'Image After'
+        },
+    ]
+    return image
+}
+
+
 class UploadphotocontifeedScreen extends Component {
     constructor(props) {
         super(props)
@@ -34,13 +56,20 @@ class UploadphotocontifeedScreen extends Component {
             wo_task:props.navigation.getParam('wo_task',''),
             wo_item_id:props.navigation.getParam('wo_item_id',''),
             done_item:props.navigation.getParam('done_item',''),
-            image_before:props.navigation.getParam('image_before',''),
-            image_after:props.navigation.getParam('image_after',''),
+            image_before:props.navigation.getParam('general_wo')[0].imgBefore.length > 0 ? route_url.header + props.navigation.getParam('general_wo')[0].imgBefore.replace('.','') : '',
+            image_after:props.navigation.getParam('general_wo')[0].imgAfter.length > 0 ? route_url.header + props.navigation.getParam('general_wo')[0].imgAfter.replace('.','') : '',
             image_placeholder:'https://www.bigw.com.au/medias/sys_master/images/images/h40/hed/12107450089502.jpg',
             form_data_before:'',
             form_data_after:'',
+            isImageViewVisible:false,
             isVisibleState:false,
         }
+    }
+
+    componentDidMount = () => {
+        console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
+        console.disableYellowBox = true;
+        console.log('ini general wo ' + JSON.stringify(this.props.navigation.getParam('general_wo','')))
     }
 
     _menu = null;
@@ -75,38 +104,58 @@ class UploadphotocontifeedScreen extends Component {
     };
 
     _uploadPhoto = () => {
-        const { image_after, image_before,wo_item_id,form_data_before,form_data_after, done_item } = this.state;
-        const { userDetail } = this.props;
-        if(image_after.length > 0 && image_before.length >0) {
+        const { image_after, image_before,wo_item_id,form_data_before,form_data_after, done_item  } = this.state;
+        const { userDetail, update_FORM } = this.props;
+        const { imgBefore, imgAfter } = this.props.navigation.getParam('general_wo','')[0]
+        const edit_imgbefore = `${route_url.header}${imgBefore.replace('.','')}`
+        const edit_imgafter = `${route_url.header}${imgAfter.replace('.','')}`
+        if(image_before == edit_imgbefore && image_after == edit_imgafter) {
+            this.props.navigation.goBack()
+        }
+        else if(image_after.length > 0 && image_before.length >0) {
             this.setState({isVisibleState:true})
             axios({
-                headers:{'Authorization':`Bearer ${userDetail.res.token}`},
+                headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
                 method:'POST',
                 url:`${route_url.header}/wo/picBefore/${wo_item_id}`,
                 data:form_data_before
             })
             .then(response=>{
                 console.log(response.data)
-                this.setState({isVisibleState:false})
-                done_item(wo_item_id)
-                this.props.navigation.goBack();
+                // console.log(`ini wo props wo ${JSON.stringify(this.props.wo)}`)
+                update_FORM(wo_item_id)
+                this._editRedux(response.data.res.path,"imgBefore")
             })
-            .catch(e=>console.log(`terjadi kesalahan ${e}`))
+            .catch(e=>console.log(`terjadi kesalahan di upload foto before ${e}`))
 
             axios({
-                headers:{'Authorization':`Bearer ${userDetail.res.token}`},
+                headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
                 method:'POST',
                 url:`${route_url.header}/wo/picAfter/${wo_item_id}`,
                 data:form_data_after
             })
             .then(response=>{
                 console.log(response.data)
+                this._editRedux(response.data.res.path,"imgAfter")
                 this.setState({isVisibleState:false})
+                this.props.navigation.goBack();
+                // console.log(this.props.wo)
             })
-            .catch(e=>console.log(`terjadi kesalahan ${e}`))
+            .catch(e=>console.log(`terjadi kesalahan di upload foto after ${e}`))
         } else {
             alert('Kamu belum upload semua form foto')
         }
+    }
+
+    _editRedux = (new_img,img_key) => {
+        const temp_wo = this.props.wo;
+        const { wo_item_id } = this.state;
+        const filter_data = temp_wo.res.filter(ids => {return ids.ID == wo_item_id})
+        const index_data = temp_wo.res.findIndex(ids => {return ids.ID == wo_item_id})
+        filter_data[0][img_key] = new_img
+        console.log(`ini filter data ${JSON.stringify(filter_data)}`)
+        temp_wo.res[index_data] = filter_data[0]
+        this.props.update_WO(temp_wo)
     }
 
     _alertPhoto = () => {
@@ -122,6 +171,14 @@ class UploadphotocontifeedScreen extends Component {
             ],
             {cancelable: false},
         )
+    }
+
+    _renderFooter({title}) {
+        return (
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>{title}</Text>
+            </View>
+        );
     }
 
     _openCamera = (image_key) => {
@@ -141,16 +198,25 @@ class UploadphotocontifeedScreen extends Component {
                 // const source = { uri: 'data:image/jpeg;base64,' + response.data };
                 let form_data = new FormData();
                 form_data.append("file",{uri:response.uri,type:response.type,name:response.fileName});
+                form_data.append("nik",this.props.userDetail.res.nik);
                 this.setState({
                     [image_key]: response.uri,
                     [image_key == "image_before" ? "form_data_before":"form_data_after"]:form_data
                 });
+                console.log(this.state.form_data_after)
+                console.log(this.state.form_data_before)
             }
         })
     }
 
+    _handleImageViewVisible = () => {
+        this.setState({isImageViewVisible:!this.state.isImageViewVisible})
+        console.log(`tertekan handle image view visible`)
+    }
+
     render() {
         const { wo_task, image_before, image_after, header_title, image_placeholder, isVisibleState } = this.state;
+        const images = [{source:{uri:image_before},title:'Image Before'},{source:{uri:image_after},title:'Image After'}]
         return (
             <View style={{flex:1,backgroundColor:colors.background_screen}}>
                 <Header
@@ -159,59 +225,72 @@ class UploadphotocontifeedScreen extends Component {
                     centerComponent={<HeaderTitle subtitle={header_title}/>}
                     containerStyle={{backgroundColor:colors.putih}}
                 />
-                <View style={{marginTop:13,paddingHorizontal:19,paddingVertical:12,backgroundColor:colors.putih}}>
-                    <Text style={{fontWeight:'700',fontSize:14}} numberOfLines={3}>{wo_task}</Text>
-                </View>
-                <View style={{marginTop:13,paddingHorizontal:19,paddingVertical:12,backgroundColor:colors.putih}}>
-                    <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-                        <Text style={{fontWeight:'700',fontSize:14}}>Before</Text>
-                        <Menu
-                            ref={this.setMenuRef}
-                            button={<Icon type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
-                        >
-                            <MenuItem onPress={()=>this.hideMenu("image_before")}>Hapus foto</MenuItem>
-                        </Menu>
+                <ScrollView>
+                    <Text style={{marginTop:13,paddingHorizontal:19,paddingVertical:12,backgroundColor:colors.putih}}>
+                        <Text style={{fontWeight:'700',fontSize:14}} numberOfLines={3}>{wo_task}</Text>
+                    </Text>
+                    <View style={{marginTop:13,paddingHorizontal:19,paddingVertical:12,backgroundColor:colors.putih}}>
+                        <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                            <Text style={{fontWeight:'700',fontSize:14}}>Before</Text>
+                            <Menu
+                                ref={this.setMenuRef}
+                                button={<Icon type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
+                            >
+                                <MenuItem onPress={()=>this.hideMenu("image_before")}>Hapus foto</MenuItem>
+                            </Menu>
+                        </View>
+                        <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
+                        <View style={{flexDirection:'row'}}>
+                            {image_before.length > 0 ? (
+                                <TouchableOpacity onPress={()=>this._handleImageViewVisible()}>
+                                    <Image  source={{uri:image_before}} style={{borderWidth:1,width:100,height:130,borderRadius:5}} resizeMode='cover'/>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableWithoutFeedback onPress={()=>this._openCamera("image_before")}>
+                                    <View style={{justifyContent:'center',alignItems:'center',width:100,height:130,borderRadius:1,borderWidth:1,borderStyle:'dashed',borderColor:colors.abu_placeholder}}>
+                                        <Image source={plus} style={{width:50,height:50}} resizeMode='contain'/>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            )}  
+                        </View>
                     </View>
-                    <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
-                    <View style={{flexDirection:'row'}}>
-                        {image_before.length > 0 ? (
-                            <Image source={{uri:`http://172.20.10.2:3000/${image_before}`}} style={{borderWidth:1,width:100,height:130,borderRadius:5}} resizeMode='cover'/>
-                        ) : (
-                            <TouchableWithoutFeedback onPress={()=>this._openCamera("image_before")}>
-                                <View style={{justifyContent:'center',alignItems:'center',width:100,height:130,borderRadius:1,borderWidth:1,borderStyle:'dashed',borderColor:colors.abu_placeholder}}>
-                                    <Image source={plus} style={{width:50,height:50}} resizeMode='contain'/>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        )}  
+                    <View style={{marginTop:13,paddingHorizontal:19,paddingVertical:12,backgroundColor:colors.putih}}>
+                        <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                            <Text style={{fontWeight:'700',fontSize:14}}>After</Text>
+                            <Menu
+                                ref={this.setMenuRef_}
+                                button={<Icon type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
+                            >
+                                <MenuItem onPress={()=>this.hideMenu("image_after")}>Hapus foto</MenuItem>
+                            </Menu>
+                        </View>
+                        <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
+                        <View style={{flexDirection:'row'}}>
+                            {image_after.length > 0  ? (
+                                <TouchableOpacity onPress={()=>this._handleImageViewVisible}>
+                                    <Image source={{uri:image_after}} style={{borderWidth:1,width:100,height:130,borderRadius:5}} resizeMode='cover'/>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableWithoutFeedback onPress={()=>this._openCamera("image_after")}>
+                                    <View style={{justifyContent:'center',alignItems:'center',width:100,height:130,borderRadius:1,borderWidth:1,borderStyle:'dashed',borderColor:colors.abu_placeholder}}>
+                                        <Image source={plus} style={{width:50,height:50}} resizeMode='contain'/>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            )}  
+                        </View>
                     </View>
-                </View>
-                <View style={{marginTop:13,paddingHorizontal:19,paddingVertical:12,backgroundColor:colors.putih}}>
-                    <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-                        <Text style={{fontWeight:'700',fontSize:14}}>After</Text>
-                        <Menu
-                            ref={this.setMenuRef_}
-                            button={<Icon type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
-                        >
-                            <MenuItem onPress={()=>this.hideMenu("image_after")}>Hapus foto</MenuItem>
-                        </Menu>
-                    </View>
-                    <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
-                    <View style={{flexDirection:'row'}}>
-                        {image_after.length > 0 ? (
-                            <Image source={{uri:image_after}} style={{borderWidth:1,width:100,height:130,borderRadius:5}} resizeMode='cover'/>
-                        ) : (
-                            <TouchableWithoutFeedback onPress={()=>this._openCamera("image_after")}>
-                                <View style={{justifyContent:'center',alignItems:'center',width:100,height:130,borderRadius:1,borderWidth:1,borderStyle:'dashed',borderColor:colors.abu_placeholder}}>
-                                    <Image source={plus} style={{width:50,height:50}} resizeMode='contain'/>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        )}  
-                    </View>
-                </View>
+                </ScrollView>
                 <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
                     <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
                 </View>
                 <LoadingState isVisible={isVisibleState}/>
+                <ImageView
+                    images={images}
+                    imageIndex={0}
+                    isVisible={this.state.isImageViewVisible}
+                    onClose={this._handleImageViewVisible}
+                    renderFooter={this._renderFooter}
+                />
             </View>
         )
     }
@@ -219,8 +298,34 @@ class UploadphotocontifeedScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        userDetail:state.user_detail
+        userDetail:state.userreducer.user_detail,
+        wo:state.formworeducer.wo,
+        form:state.formworeducer.form
     }
 }
 
-export default connect(mapStateToProps)(UploadphotocontifeedScreen)
+const mapDispatchToProps = dispatch => {
+    return {
+        update_WO : (data) => dispatch(updateWO(data)),
+        update_FORM : (data)=> dispatch(updateFORM(data))
+    }
+}
+
+const styles = StyleSheet.create({
+    footerText: {
+        fontSize: 16,
+        color: '#FFF',
+        textAlign: 'center',
+    },
+    footer: {
+        height: 50,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+    },
+})
+
+export default connect(mapStateToProps,mapDispatchToProps)(UploadphotocontifeedScreen)

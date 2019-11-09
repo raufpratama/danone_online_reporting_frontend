@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, TouchableWithoutFeedback, Alert } from 'react-native'
+import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, TouchableWithoutFeedback, Alert,ScrollView, RefreshControl } from 'react-native'
 import { connect } from 'react-redux'
 import axios from 'axios'
 
@@ -26,7 +26,8 @@ class RiwayatcontifeedScreen extends Component {
         super(props);
         this.state = {
             wo_tasks:'',
-            loading:true
+            loading:true,
+            refresh:false,
         }
     }
 
@@ -49,6 +50,22 @@ class RiwayatcontifeedScreen extends Component {
         )
     }
 
+    _onRefresh = () => {
+        this.setState({refreshing:true})
+        const { userDetail } = this.props;
+        console.log(userDetail.res.token)
+        axios.get(`${route_url.header}/wo/list/${area.contiform}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+        .then(response=>{
+            console.log(response.data)
+            this.setState({
+            wo_tasks:response.data.res.filter(ress=>ress.Status == 3),
+            loading:false,
+            refreshing:false
+        })})
+        .catch(e=>console.log(`terjadi kesalahan ${e}`))
+
+    }
+
     _logout = async() => {
         await AsyncStorage.removeItem(environment.ASYNC_USER_TOKEN)
         this.props.user_Logout([])
@@ -57,8 +74,8 @@ class RiwayatcontifeedScreen extends Component {
 
     _refresh = () => {
         const { userDetail } = this.props;
-        console.log(userDetail)
-        axios.post(`${route_url.header}/wo/list`,{area:area.contiform,token:userDetail.res.token})
+        console.log(userDetail.res.token)
+        axios.get(`${route_url.header}/wo/list/${area.contiform}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             this.setState({
@@ -100,7 +117,7 @@ class RiwayatcontifeedScreen extends Component {
     }
 
     render() {
-        const { loading, wo_tasks } = this.state;
+        const { loading, wo_tasks, refresh } = this.state;
         return (
             <View style={{flex:1}}>
                 {loading ? (
@@ -115,10 +132,12 @@ class RiwayatcontifeedScreen extends Component {
                         keyExtractor={(item,id)=>id.toString()}
                     />
                 ) : (
-                    <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-                        <Image source={list_placeholder} style={{width:136,height:185}} resizeMode='contain'/>
-                        <Text style={{fontSize:12,width:254,color:colors.abu_placeholder}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
-                    </View>
+                    <ScrollView refreshControl={<RefreshControl refreshing={refresh} onRefresh={this._onRefresh}/>} >
+                        <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+                            <Image source={list_placeholder} style={{width:136,height:185}} resizeMode='contain'/>
+                            <Text style={{fontSize:12,width:254,color:colors.abu_placeholder}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
+                        </View>
+                    </ScrollView>
                 )}
                 <Text onPress={this._alertLogout} style={{color:colors.abu_placeholder,textDecorationLine:'underline',alignSelf:'center',paddingBottom:20}}>Logout</Text>
             </View>
@@ -128,7 +147,7 @@ class RiwayatcontifeedScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        userDetail:state.user_detail
+        userDetail:state.userreducer.user_detail
     }
 }
 

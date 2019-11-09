@@ -30,8 +30,10 @@ class LoginScreen extends Component {
             .then(async response=>{
                 if(response.data.res !== "NIK salah") {
                     console.log(response.data)
-                    this.props.user_Login(response.data)
-                    await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(response.data))
+                    const respon = response.data
+                    respon.res.nik = NIK
+                    this.props.user_Login(respon)
+                    await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(respon))
                     this.setState({isVisible:false})
                     this.props.navigation.navigate('App')
                 } else {

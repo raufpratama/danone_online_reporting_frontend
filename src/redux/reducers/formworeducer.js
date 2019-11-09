@@ -1,9 +1,9 @@
-const userState = {
+const wostate = {
     wo:'',
     form:[],
 }
 
-export default userreducer = (state=userState,action) => {
+export default formworeducer = (state=wostate,action) => {
     switch(action.type) {
         case "UPDATE_WO":
             return {
