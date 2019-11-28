@@ -56,14 +56,15 @@ class UploadphotocontifeedScreen extends Component {
             wo_task:props.navigation.getParam('wo_task',''),
             wo_item_id:props.navigation.getParam('wo_item_id',''),
             done_item:props.navigation.getParam('done_item',''),
-            image_before:props.navigation.getParam('general_wo')[0].imgBefore.length > 0 ? route_url.header + props.navigation.getParam('general_wo')[0].imgBefore.replace('.','') : '',
-            image_after:props.navigation.getParam('general_wo')[0].imgAfter.length > 0 ? route_url.header + props.navigation.getParam('general_wo')[0].imgAfter.replace('.','') : '',
+            image_before:props.navigation.getParam('general_wo').imgBefore == null ? '' : route_url.header + props.navigation.getParam('general_wo').imgBefore.replace('.',''),
+            image_after:props.navigation.getParam('general_wo').imgAfter == null ? '' : route_url.header + props.navigation.getParam('general_wo').imgAfter.replace('.',''),
             image_placeholder:'https://www.bigw.com.au/medias/sys_master/images/images/h40/hed/12107450089502.jpg',
             form_data_before:'',
             form_data_after:'',
             isImageViewVisible:false,
             isVisibleState:false,
         }
+        console.log(props.navigation.getParam('general_wo').imgBefore !== null)
     }
 
     componentDidMount = () => {
@@ -106,13 +107,13 @@ class UploadphotocontifeedScreen extends Component {
     _uploadPhoto = () => {
         const { image_after, image_before,wo_item_id,form_data_before,form_data_after, done_item  } = this.state;
         const { userDetail, update_FORM } = this.props;
-        const { imgBefore, imgAfter } = this.props.navigation.getParam('general_wo','')[0]
-        const edit_imgbefore = `${route_url.header}${imgBefore.replace('.','')}`
-        const edit_imgafter = `${route_url.header}${imgAfter.replace('.','')}`
-        if(image_before == edit_imgbefore && image_after == edit_imgafter) {
-            this.props.navigation.goBack()
-        }
-        else if(image_after.length > 0 && image_before.length >0) {
+        // const { imgBefore, imgAfter } = this.props.navigation.getParam('general_wo','')
+        // const edit_imgbefore = `${route_url.header}${imgBefore.replace('.','')}`
+        // const edit_imgafter = `${route_url.header}${imgAfter.replace('.','')}`
+        // if(image_before == edit_imgbefore && image_after == edit_imgafter) {
+        //     this.props.navigation.goBack()
+        // }
+        if(image_after.length > 0 && image_before.length >0) {
             this.setState({isVisibleState:true})
             axios({
                 headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
@@ -152,9 +153,9 @@ class UploadphotocontifeedScreen extends Component {
         const { wo_item_id } = this.state;
         const filter_data = temp_wo.res.filter(ids => {return ids.ID == wo_item_id})
         const index_data = temp_wo.res.findIndex(ids => {return ids.ID == wo_item_id})
-        filter_data[0][img_key] = new_img
+        filter_data[img_key] = new_img
         console.log(`ini filter data ${JSON.stringify(filter_data)}`)
-        temp_wo.res[index_data] = filter_data[0]
+        temp_wo.res[index_data] = filter_data
         this.props.update_WO(temp_wo)
     }
 

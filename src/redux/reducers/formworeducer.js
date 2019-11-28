@@ -1,5 +1,5 @@
 const wostate = {
-    wo:'',
+    wo:{},
     form:[],
 }
 

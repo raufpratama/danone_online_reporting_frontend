@@ -27,6 +27,7 @@ import TugasmodulfillScreen from '../Modulfill/TugasmodulfillScreen'
 import RiwayatmodulfillScreen from '../Modulfill/RiwayatmodulfillScreen'
 import DetailtugasriwayatmodulfillScreen from '../Modulfill/DetailtugasriwayatmodulfillScreen'
 import UploadphotomodulfillScreen from '../Modulfill/UploadphotomodulfillScreen'
+import ManagerScreen from '../Manager/ManagerScreen'
 
 const logos = [
     {
@@ -287,6 +288,7 @@ const AppStack = createBottomTabNavigator({
 const MainApp = createSwitchNavigator({
     Auth:AuthScreen,
     Login:LoginScreen,
+    Manager:ManagerScreen,
     App:AppStack
 }, {
     initialRouteName:'Auth',

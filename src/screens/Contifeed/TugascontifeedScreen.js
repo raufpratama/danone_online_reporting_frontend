@@ -1,9 +1,14 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, TouchableWithoutFeedback, Alert } from 'react-native'
+import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, TouchableWithoutFeedback, Alert, StyleSheet, Linking } from 'react-native'
 import { connect } from 'react-redux'
 import axios from 'axios'
+import { Icon, Button } from 'react-native-elements'
+import ActionButton from 'react-native-action-button';
+import DocumentPicker from 'react-native-document-picker';
 
+import ErrorScreen from '../sub_components/ErrorScreen'
 import { userLogin, userLogout } from '../../redux/actions/useractions'
+import moment from 'moment'
 
 const dummy_wo_task = [
     {
@@ -26,15 +31,58 @@ class TugascontifeedScreen extends Component {
         super(props);
         this.state = {
             wo_tasks:'',
-            loading:true
+            loading:true,
+            network:true,
         }
     }
 
     componentDidMount = async() => {
         console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
-    console.disableYellowBox = true;
+        console.disableYellowBox = true;
         this._refresh()
         console.log(this.props.userDetail)
+    }
+
+    _document_Pick = async() => {
+        try {
+            const res = await DocumentPicker.pick({
+              type: [DocumentPicker.types.pdf],
+            });
+            console.log(
+              res.uri,
+              res.type, // mime type
+              res.name,
+              res.size
+            );
+
+            let form_data = new FormData();
+            form_data.append("file",res);
+            form_data.append("nik",this.props.userDetail.res.nik)
+            console.log(`ini form data ${JSON.stringify(form_data)}`)
+            this.setState({loading:true})
+            axios({
+                headers:{
+                    'Authorization':`Bearer ${this.props.userDetail.res.token}`,
+                    'Content-Type':'multipart/form-data'
+                },
+                method:'POST',
+                url:`${route_url.header}/wo`,
+                data:form_data,
+            })
+            .then(async response=>{
+                console.log(response.data)
+                this._refresh(true)
+            })
+            .catch(e=>{
+                console.log(`trerjadi error upload pdf ${e}`)
+            })
+          } catch (err) {
+            if (DocumentPicker.isCancel(err)) {
+              // User cancelled the picker, exit any dialogs or menus and move on
+            } else {
+              throw err;
+            }
+          }
     }
 
     _alertLogout = () => {
@@ -58,40 +106,46 @@ class TugascontifeedScreen extends Component {
         this.props.navigation.navigate('Login')
     }
 
-    _refresh = () => {
+    _refresh = (kondisi) => {
         const { userDetail } = this.props;
         console.log(userDetail.res.token)
-        axios.get(`${route_url.header}/wo/list/${area.contiform}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+        axios.get(`${route_url.header}/wo/list/${area.modulfill}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             this.setState({
-            wo_tasks:response.data.res.filter(ress=>ress.Status !== 3),
-            loading:false
+            wo_tasks:kondisi ? response.data.res.filter(ress=>ress.Status !== 3) : '',
+            loading:false,
+            network:true
         })})
-        .catch(e=>console.log(`terjadi kesalahan ${e}`))
+        .catch(e=>{
+            console.log(e.message)
+            if(e.message == "Network Error") {
+                this.setState({network:false})
+            }
+        })
     }
 
     _renderItem = ({item}) => {
         return (
-            <TouchableWithoutFeedback onPress={()=>this.props.navigation.navigate('Detail',{refresh:this._refresh,wo_tasks:this.state.wo_tasks,header_title:item.Area == "K442113" ? "Contiform" : item.Area == "K998848" ? "Contifeed" : "Modulfill"})}>
+            <TouchableWithoutFeedback onPress={()=>this.props.navigation.navigate('Detail',{refresh:this._refresh,wo_tasks:item,header_title:item.Area == "K442113" ? "Contiform" : item.Area == "K998848" ? "Contifeed" : "Modulfill"})}>
                 <View style={{elevation:4,borderRadius:5,paddingHorizontal:13,paddingVertical:14}}>
                     <View style={{flexDirection:'row',height:160}}>
                         <View style={{width:135,justifyContent:'space-evenly'}}>
                             <Text style={{fontSize:13,fontWeight:'700'}}>WO number</Text>
                             <Text style={{fontSize:13,fontWeight:'700'}}>Work center</Text>
                             <Text style={{fontSize:13,fontWeight:'700'}}>Planned Duration</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Personel</Text>
                             <Text style={{fontSize:13,fontWeight:'700'}}>Description</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Personel</Text>
                             <Text style={{fontSize:13,fontWeight:'700'}}>Tanggal</Text>
                             <Text style={{fontSize:13,fontWeight:'700'}}>Status</Text>
                         </View>
                         <View style={{justifyContent:'space-evenly'}}>
-                            <Text style={{fontSize:13}}>: {item.WONumber}</Text>
+                            <Text style={{fontSize:13}}>: {item.WoNumber}</Text>
                             <Text style={{fontSize:13}}>: SPS</Text>
-                            <Text style={{fontSize:13}}>: {item.EstDuration}</Text>
-                            <Text style={{fontSize:13}}>: 1-WK-PM {item.Area == "K442113" ? " Contiform " : item.Area == "K998848" ? " Contifeed " : " Modulfill "}{item.Area}</Text>
+                            <Text style={{fontSize:13}}>: {JSON.parse(item.JSONData).plannedDuration}</Text>
+                            <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(item.JSONData).description.full}</Text>
                             <Text style={{fontSize:13}}>: {item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
-                            <Text style={{fontSize:13}}>: 22 November 2019</Text>
+                            <Text style={{fontSize:13}}>: {moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
                             <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:item.Status == 1 ? colors.hijau_benar : item.Status == 2 ? colors.kuning : item.status == 3 ? colors.blue_link : colors.abu_placeholder}}>
                                 <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{item.Status == 1 ? "Open" : item.Status == 2 ? "Working" : item.status == 3 ? "Submit" : "Close"}</Text>
                             </View>
@@ -102,14 +156,30 @@ class TugascontifeedScreen extends Component {
         )
     }
 
+    _renderFloatingAction = () => {
+        if(this.props.isLogin) {
+            if(this.props.userDetail.res.Jabatan == "MAINTENANCE PLANNER")
+            return (
+                <ActionButton buttonColor="rgba(231,76,60,1)">
+                    <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={this._document_Pick}>
+                        <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
+                    </ActionButton.Item>
+                </ActionButton>
+            )
+        }
+    }
+
     render() {
-        const { loading, wo_tasks } = this.state;
+        const { loading, wo_tasks, network } = this.state;
+        const { userDetail, isLogin } = this.props;
         return (
             <View style={{flex:1}}>
                 {loading ? (
                     <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
                         <ActivityIndicator style={{flex:1}} size={25}/>
                     </View>
+                ) : !network ? (
+                    <ErrorScreen refresh={this._refresh}/>
                 ) : wo_tasks.length > 0 ? (
                     <FlatList
                         data={wo_tasks}
@@ -123,6 +193,7 @@ class TugascontifeedScreen extends Component {
                         <Text style={{fontSize:12,width:254,color:colors.abu_placeholder,textAlign:'center'}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
                     </View>
                 )}
+                {this._renderFloatingAction()}
                 <Text onPress={this._alertLogout} style={{color:colors.abu_placeholder,textDecorationLine:'underline',alignSelf:'center',paddingBottom:20}}>Logout</Text>
             </View>
         )
@@ -131,7 +202,8 @@ class TugascontifeedScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        userDetail:state.userreducer.user_detail
+        userDetail:state.userreducer.user_detail,
+        isLogin:state.userreducer.isLogin
     }
 }
 
@@ -141,5 +213,13 @@ const mapDispatchToProps = dispatch => {
         user_Logout:(data)=>dispatch(userLogout(data))
     }
 }
+
+const styles = StyleSheet.create({
+    actionButtonIcon: {
+        fontSize: 20,
+        height: 22,
+        color: 'white',
+    },
+  });
 
 export default connect(mapStateToProps,mapDispatchToProps)(TugascontifeedScreen)

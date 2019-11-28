@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, ActivityIndicator, ScrollView, Alert } from 'react-native'
+import { Text, View, FlatList, ActivityIndicator, ScrollView, Alert, Linking } from 'react-native'
 import { Header, Icon, Divider, Button, CheckBox } from 'react-native-elements'
 import axios from 'axios';
 import { connect } from 'react-redux'
+import moment from 'moment'
 
 import LoadingState from '../sub_components/LoadingState';
 import { updateFORM, updateWO } from '../../redux/actions/formwoactions'
@@ -38,17 +39,17 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         const { detail_wo,wo_tasks } = this.state;
         const { userDetail, update_WO, wo } = this.props
         console.log(detail_wo)
-        console.log(wo.length > 0 && wo.id_wo == wo_tasks[0].ID)
-        console.log(`id wo ${wo_tasks[0].ID}`)
+        console.log(wo.length > 0 && wo.id_wo == wo_tasks.ID)
+        console.log(`id wo ${JSON.stringify(wo_tasks)}`)
         console.log(' ini wo di redux ' + JSON.stringify(wo))
-        if(Object.keys(wo).length > 0 && wo.id_wo == wo_tasks[0].ID) {
+        if(Object.keys(wo).length > 0 && wo.id_wo == wo_tasks.ID) {
             this.setState({detail_wo:wo.res,loading:false})
         } else {
-            axios.get(`${route_url.header}/wo/detail/${wo_tasks[0].ID}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+            axios.get(`${route_url.header}/wo/detail/${wo_tasks.WoNumber}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
             .then(response=>{
                 console.log(response.data)
                 const temp = response.data
-                temp.id_wo = wo_tasks[0].ID
+                temp.id_wo = wo_tasks.ID
                 update_WO(temp)
                 this.setState({detail_wo:response.data.res,loading:false})
             })
@@ -56,7 +57,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         }
     }
 
-    _renderItemInformasi = ({item}) => {
+    _renderItemInformasi = () => {
         return (
             <View>
                 <View style={{flexDirection:'row',height:160}}>
@@ -64,20 +65,20 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         <Text style={{fontSize:13,fontWeight:'700'}}>WO number</Text>
                         <Text style={{fontSize:13,fontWeight:'700'}}>Work center</Text>
                         <Text style={{fontSize:13,fontWeight:'700'}}>Planned Duration</Text>
-                        <Text style={{fontSize:13,fontWeight:'700'}}>Personel</Text>
                         <Text style={{fontSize:13,fontWeight:'700'}}>Description</Text>
+                        <Text style={{fontSize:13,fontWeight:'700'}}>Personel</Text>
                         <Text style={{fontSize:13,fontWeight:'700'}}>Tanggal</Text>
                         <Text style={{fontSize:13,fontWeight:'700'}}>Status</Text>
                     </View>
                     <View style={{justifyContent:'space-evenly'}}>
-                        <Text style={{fontSize:13}}>: {item.WONumber}</Text>
-                        <Text style={{fontSize:13}}>: SPS</Text>
-                        <Text style={{fontSize:13}}>: {item.EstDuration}</Text>
-                        <Text style={{fontSize:13}}>: 1-WK-PM {item.Area == "K442113" ? " Contiform " : item.Area == "K998848" ? " Contifeed " : " Modulfill "}{item.Area}</Text>
-                        <Text style={{fontSize:13}}>: {item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
-                        <Text style={{fontSize:13}}>: 22 November 2019</Text>
-                        <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:item.Status == 1 ? colors.hijau_benar : item.Status == 2 ? colors.kuning : item.status == 3 ? colors.blue_link : colors.abu_placeholder}}>
-                            <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{item.Status == 1 ? "Open" : item.Status == 2 ? "Working" : item.status == 3 ? "Submit" : "Close"}</Text>
+                    <Text style={{fontSize:13}}>: {this.state.wo_tasks.WoNumber}</Text>
+                            <Text style={{fontSize:13}}>: SPS</Text>
+                        <Text style={{fontSize:13}}>: {JSON.parse(this.state.wo_tasks.JSONData).plannedDuration}</Text>
+                        <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(this.state.wo_tasks.JSONData).description.full}</Text>
+                        <Text style={{fontSize:13}}>: {this.state.wo_tasks.Who}-{this.state.wo_tasks.WhoName.replace(' ','-').toUpperCase()}</Text>
+                        <Text style={{fontSize:13}}>: {moment(this.state.wo_tasks.TanggalAktif).format('DD MMMM YYYY')}</Text>
+                        <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:this.state.wo_tasks.Status == 1 ? colors.hijau_benar : this.state.wo_tasks.Status == 2 ? colors.kuning : this.state.wo_tasks.status == 3 ? colors.blue_link : colors.abu_placeholder}}>
+                            <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{this.state.wo_tasks.Status == 1 ? "Open" : this.state.wo_tasks.Status == 2 ? "Working" : this.state.wo_tasks.Status == 3 ? "Submit" : "Close"}</Text>
                         </View>
                     </View>
                 </View>
@@ -86,12 +87,9 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     }
 
     _renderItemTugasCheckbox = ({item}) => {
-        const { header_title, done_items } = this.state;
-        const { form } = this.props;
-        console.log(`ini item ${JSON.stringify(this._filterObject(item.ID))}`)
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
-                <CheckBox checked={form.includes(item.ID)} onPress={()=>this.props.navigation.navigate('Uploadphoto',{general_wo:this._filterObject(item.ID),header_title,done_item:this._doneItem,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Location + ' ' + item.Clitr.map(clitrs => ' - ' + clitrs) + ' - ' + item.What + ' - ' + item.Standart + item.ToolsMaterial.map(tools=> ' - ' + tools)})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Location + ' '}{item.Clitr.map(clitrs => ' - ' + clitrs)}{' - ' + item.What}{' - ' + item.Standart}{item.ToolsMaterial.map(tools=> ' - ' + tools)}</Text>}/>
+                <CheckBox checked={false} onPress={()=>this.props.navigation.navigate('Uploadphoto',{general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_item_id:item.WoNumber,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
             </View>
         )
     }
@@ -99,28 +97,20 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     _renderItemTugas = ({item,index}) => {
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
-                <Text style={{fontWeight:'700',marginVertical:5}}>{index+1}.{' '}</Text>
-                <Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Location + ' '}{item.Clitr.map(clitrs => ' - ' + clitrs)}{' - ' + item.What}{' - ' + item.Standart}{item.ToolsMaterial.map(tools=> ' - ' + tools)}</Text>
-            </View>
-        )
-    }
-
-    _renderItemTugasClitr = ({item}) => {
-        return (
-            <View style={{flexDirection:'row'}}>
-                <Text>{item + ' '}</Text>
+                <Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>
             </View>
         )
     }
 
     _filterObject = (id) => {
         const filter_data = this.props.wo.res.filter(ids => {return ids.ID == id})
-        return filter_data
+        console.log(filter_data[0])
+        return filter_data[0]
     }
 
     _alertAccept = () => {
         const { wo_tasks } = this.state; 
-        Alert.alert('Perhatian',wo_tasks[0].Status == 1 ? 'Apakah anda yakin ingin memulai WO ?' : 'Apakah anda yakin ingin menutup WO',[
+        Alert.alert('Perhatian',wo_tasks.Status == 1 ? 'Apakah anda yakin ingin memulai WO ?' : 'Apakah anda yakin ingin menutup WO',[
             {
                 text: 'YA', onPress: () => this._acceptWo()
             },
@@ -139,13 +129,13 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         const { wo_tasks, refresh, done_items, detail_wo } = this.state;
         const { userDetail, form } = this.props;
         console.log(userDetail)
-        console.log(`${route_url.header}/wo/${wo_tasks[0].Status == 1 ? 'accept' : 'close'}/${wo_tasks[0].ID}`)
-        if(wo_tasks[0].Status == 1 || wo_tasks[0].Status == 2 && form.length == detail_wo.length) {
+        console.log(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`)
+        if(wo_tasks.Status == 1 || wo_tasks.Status == 2 && form.length == detail_wo.length) {
             this.setState({isVisibleState:true})
-            axios.get(`${route_url.header}/wo/${wo_tasks[0].Status == 1 ? 'accept' : 'close'}/${wo_tasks[0].ID}`,{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
+            axios.patch(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
             .then(response=>{
                 console.log(response.data)
-                alert(`Work order berubah status menjadi ${wo_tasks[0].Status == 1 ? 'dikerjakan':'close'}`)
+                alert(`Work order berubah status menjadi ${wo_tasks.Status == 1 ? 'dikerjakan':'close'}`)
                 refresh()
                 this.setState({isVisibleState:false})
                 this.props.navigation.goBack()
@@ -158,6 +148,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
 
     render() {
         const { wo_tasks, header_title, detail_wo, loading, isVisibleState } = this.state;
+        const { userDetail } = this.props;
         return (
             <View style={{flex:1,backgroundColor:colors.background_screen}}>
                 <Header
@@ -177,11 +168,12 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                             <View style={{marginTop:13,paddingHorizontal:19,paddingVertical:12,backgroundColor:colors.putih}}>
                                 <Text style={{fontWeight:'700',fontSize:14}}>Informasi</Text>
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
-                                <FlatList
+                                {this._renderItemInformasi()}
+                                {/* <FlatList
                                     data={wo_tasks}
                                     renderItem={this._renderItemInformasi}
                                     keyExtractor={(item,id)=>id.toString()}
-                                />
+                                /> */}
                             </View>
                             {/* END OF INFOMRATION */}
 
@@ -191,7 +183,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={wo_tasks[0].Status == 1 || wo_tasks[0].Status == 3 ? this._renderItemTugas:this._renderItemTugasCheckbox}
+                                    renderItem={wo_tasks.Status == 1 || wo_tasks.Status == 3 ? this._renderItemTugas:this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
@@ -199,11 +191,13 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         </View>
                     )}
                 </ScrollView>
-                {wo_tasks[0].Status == 1 || wo_tasks[0].Status == 2 ? (
+                {wo_tasks.Status == 1 || wo_tasks.Status == 2 ? (
                     <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
-                        <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks[0].Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks[0].Status == 1 ? 'Kerjakan':'Close'}/>
+                        <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks.Status == 1 ? 'Kerjakan':'Close'}/>
                     </View>
-                ): null}
+                ): wo_task.Status == 3 && userDetail.res.Jabatan == "PRODUCTION SUPERVISOR" ? (<View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
+                    <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={'Complete'}/>
+                </View>) : null}
                 <LoadingState isVisible={isVisibleState}/>
             </View>
         )
