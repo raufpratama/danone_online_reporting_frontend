@@ -10,6 +10,7 @@ import ErrorScreen from '../sub_components/ErrorScreen'
 import { userLogin, userLogout } from '../../redux/actions/useractions'
 import moment from 'moment'
 import ExportexceldateModal from '../sub_components/Modals/ExportexceldateModal'
+import Badger from  '../sub_components/BadgeStatusWo';
 
 const dummy_wo_task = [
     {
@@ -105,8 +106,8 @@ class TugascontifeedScreen extends Component {
 
     _logout = async() => {
         await AsyncStorage.removeItem(environment.ASYNC_USER_TOKEN)
-        this.props.user_Logout([])
         this.props.navigation.navigate('Login')
+        this.props.user_Logout()
     }
 
     _refresh = (kondisi) => {
@@ -149,8 +150,8 @@ class TugascontifeedScreen extends Component {
                             <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(item.JSONData).description.full}</Text>
                             <Text style={{fontSize:13}}>: {item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
                             <Text style={{fontSize:13}}>: {moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
-                            <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:item.Status == 1 ? colors.hijau_benar : item.Status == 2 ? colors.kuning : item.status == 3 ? colors.blue_link : colors.abu_placeholder}}>
-                                <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{item.Status == 1 ? "Open" : item.Status == 2 ? "Working" : item.status == 3 ? "Submit" : "Close"}</Text>
+                            <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:Badger.color(item.Status)}}>
+                                <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{Badger.text(item.Status)}</Text>
                             </View>
                         </View>
                     </View>
@@ -197,6 +198,8 @@ class TugascontifeedScreen extends Component {
                     </ActionButton>
                 )
             }
+    } else {
+        return null
     }
     }
 
@@ -228,7 +231,7 @@ class TugascontifeedScreen extends Component {
                         <Text style={{fontSize:12,width:254,color:colors.abu_placeholder,textAlign:'center'}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
                     </View>
                 )}
-                {this._renderFloatingAction()}
+                {isLogin ? this._renderFloatingAction() : null}
                 <Text onPress={this._alertLogout} style={{color:colors.abu_placeholder,textDecorationLine:'underline',alignSelf:'center',paddingBottom:20}}>Logout</Text>
                 <ExportexceldateModal isVisible={this.state.isVisibleExportModal} handlemodal={this._handleExportExcelModal}/>
             </View>
@@ -246,7 +249,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         user_Login : (data)=>dispatch(userLogin(data)),
-        user_Logout:(data)=>dispatch(userLogout(data))
+        user_Logout:()=>dispatch(userLogout())
     }
 }
 

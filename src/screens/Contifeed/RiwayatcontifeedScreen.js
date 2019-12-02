@@ -9,6 +9,7 @@ import DocumentPicker from 'react-native-document-picker';
 import ErrorScreen from '../sub_components/ErrorScreen'
 import { userLogin, userLogout } from '../../redux/actions/useractions'
 import moment from 'moment'
+import Badger from  '../sub_components/BadgeStatusWo';
 
 const dummy_wo_task = [
     {
@@ -147,8 +148,8 @@ class TugascontifeedScreen extends Component {
                             <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(item.JSONData).description.full}</Text>
                             <Text style={{fontSize:13}}>: {item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
                             <Text style={{fontSize:13}}>: {moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
-                            <View style={{paddingHorizontal:5,paddingVertical:3,maxWidth:80,alignItems:'center',borderRadius:10,backgroundColor:item.Status == 3 ? colors.abu_placeholder : colors.blue_link}}>
-                                <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{item.Status == 3 ? "Submit" : "Complete"}</Text>
+                            <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:Badger.color(item.Status)}}>
+                                <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{Badger.text(item.Status)}</Text>
                             </View>
                         </View>
                     </View>

@@ -5,9 +5,9 @@ export const userLogin = (data) => {
     }
 }
 
-export const userLogout = (data) => {
+export const userLogout = () => {
     return {
         type:"USER_LOGOUT",
-        payload:data
+        payload:''
     }
 }

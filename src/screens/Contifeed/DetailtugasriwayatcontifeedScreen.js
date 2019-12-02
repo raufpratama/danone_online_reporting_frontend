@@ -7,6 +7,7 @@ import moment from 'moment'
 
 import LoadingState from '../sub_components/LoadingState';
 import { updateFORM, updateWO } from '../../redux/actions/formwoactions'
+import Badger from  '../sub_components/BadgeStatusWo';
 
 const colors = require('../../assets/utils/colors')
 const route_url = require('../../assets/utils/urls')
@@ -77,8 +78,8 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(this.state.wo_tasks.JSONData).description.full}</Text>
                         <Text style={{fontSize:13}}>: {this.state.wo_tasks.Who}-{this.state.wo_tasks.WhoName.replace(' ','-').toUpperCase()}</Text>
                         <Text style={{fontSize:13}}>: {moment(this.state.wo_tasks.TanggalAktif).format('DD MMMM YYYY')}</Text>
-                        <View style={{paddingHorizontal:5,paddingVertical:3,maxWidth:80,alignItems:'center',borderRadius:10,backgroundColor:this.state.wo_tasks.Status == 3 ? colors.abu_placeholder : colors.blue_link}}>
-                            <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{this.state.wo_tasks.Status == 3 ? "Submit" : "Completed"}</Text>
+                        <View style={{paddingHorizontal:5,paddingVertical:3,maxWidth:80,alignItems:'center',borderRadius:10,backgroundColor:Badger.color(this.state.wo_tasks.Status)}}>
+                            <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{Badger.text(this.state.wo_tasks.Status)}</Text>
                         </View>
                     </View>
                 </View>
