@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">danone_online_reporting</string>
+    <string name="app_name">Danone online reporting</string>
+        <string name="app_name_wa">whatsapp</string>
 </resources>
