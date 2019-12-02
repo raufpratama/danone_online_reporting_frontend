@@ -10,7 +10,7 @@ import ErrorScreen from '../sub_components/ErrorScreen'
 import { userLogin, userLogout } from '../../redux/actions/useractions'
 import moment from 'moment'
 
-class ManagerScreen extends Component {
+class ManagerModulfillScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -120,7 +120,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         user_Login : (data)=>dispatch(userLogin(data)),
-        user_Logout:(data)=>dispatch(userLogout(data))
+        user_Logout:()=>dispatch(userLogout())
     }
 }
 
@@ -132,4 +132,4 @@ const styles = StyleSheet.create({
     },
   });
 
-export default connect(mapStateToProps,mapDispatchToProps)(ManagerScreen)
+export default connect(mapStateToProps,mapDispatchToProps)(ManagerModulfillScreen)

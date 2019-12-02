@@ -30,7 +30,7 @@ const environment = require('../../assets/utils/environment')
 const colors = require('../../assets/utils/colors')
 const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 
-class TugascontifeedScreen extends Component {
+class ManagerContifeedScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -108,7 +108,7 @@ class TugascontifeedScreen extends Component {
 
     _logout = async() => {
         await AsyncStorage.removeItem(environment.ASYNC_USER_TOKEN)
-        this.props.user_Logout([])
+        this.props.user_Logout()
         this.props.navigation.navigate('Login')
     }
 
@@ -305,7 +305,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         user_Login : (data)=>dispatch(userLogin(data)),
-        user_Logout:(data)=>dispatch(userLogout(data))
+        user_Logout:()=>dispatch(userLogout())
     }
 }
 
@@ -317,4 +317,4 @@ const styles = StyleSheet.create({
     },
   });
 
-export default connect(mapStateToProps,mapDispatchToProps)(TugascontifeedScreen)
+export default connect(mapStateToProps,mapDispatchToProps)(ManagerContifeedScreen)
