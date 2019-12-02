@@ -114,7 +114,7 @@ class TugascontifeedScreen extends Component {
         .then(response=>{
             console.log(response.data)
             this.setState({
-            wo_tasks:response.data.res.filter(ress=>ress.Status == 3),
+            wo_tasks:response.data.res.filter(ress=>ress.Status == 3 || ress.Status == 4),
             loading:false,
             network:true
         })})
@@ -147,8 +147,8 @@ class TugascontifeedScreen extends Component {
                             <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(item.JSONData).description.full}</Text>
                             <Text style={{fontSize:13}}>: {item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
                             <Text style={{fontSize:13}}>: {moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
-                            <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:item.Status == 1 ? colors.hijau_benar : item.Status == 2 ? colors.kuning : item.status == 3 ? colors.blue_link : colors.abu_placeholder}}>
-                                <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{item.Status == 1 ? "Open" : item.Status == 2 ? "Working" : item.status == 3 ? "Submit" : "Close"}</Text>
+                            <View style={{paddingHorizontal:5,paddingVertical:3,maxWidth:80,alignItems:'center',borderRadius:10,backgroundColor:item.Status == 3 ? colors.abu_placeholder : colors.blue_link}}>
+                                <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{item.Status == 3 ? "Submit" : "Complete"}</Text>
                             </View>
                         </View>
                     </View>

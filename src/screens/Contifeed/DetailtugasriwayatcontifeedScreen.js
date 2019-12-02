@@ -77,8 +77,8 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(this.state.wo_tasks.JSONData).description.full}</Text>
                         <Text style={{fontSize:13}}>: {this.state.wo_tasks.Who}-{this.state.wo_tasks.WhoName.replace(' ','-').toUpperCase()}</Text>
                         <Text style={{fontSize:13}}>: {moment(this.state.wo_tasks.TanggalAktif).format('DD MMMM YYYY')}</Text>
-                        <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:this.state.wo_tasks.Status == 1 ? colors.hijau_benar : this.state.wo_tasks.Status == 2 ? colors.kuning : this.state.wo_tasks.status == 3 ? colors.blue_link : colors.abu_placeholder}}>
-                            <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{this.state.wo_tasks.Status == 1 ? "Open" : this.state.wo_tasks.Status == 2 ? "Working" : this.state.wo_tasks.Status == 3 ? "Submit" : "Close"}</Text>
+                        <View style={{paddingHorizontal:5,paddingVertical:3,maxWidth:80,alignItems:'center',borderRadius:10,backgroundColor:this.state.wo_tasks.Status == 3 ? colors.abu_placeholder : colors.blue_link}}>
+                            <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{this.state.wo_tasks.Status == 3 ? "Submit" : "Completed"}</Text>
                         </View>
                     </View>
                 </View>
@@ -89,7 +89,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     _renderItemTugasCheckbox = ({item}) => {
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
-                <CheckBox checked={this.state.wo_tasks.status == 3 ? true : this.props.form.includes(item.ID)} onPress={()=>this.props.navigation.navigate('Uploadphoto',{general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
+                <CheckBox checked={this.state.wo_tasks.Status == 3 || this.state.wo_tasks.Status == 4 ? true : this.props.form.includes(item.ID)} onPress={()=>this.props.navigation.navigate('Uploadphoto',{general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
             </View>
         )
     }
@@ -105,8 +105,6 @@ class DetailtugasriwayatcontifeedScreen extends Component {
             </View>
         )
     }
-
-    _
 
     _filterObject = (id) => {
         const filter_data = this.props.wo.res.filter(ids => {return ids.ID == id})
@@ -153,7 +151,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         console.log(userDetail)
         console.log(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`)
         this.setState({isVisibleState:true})
-        axios.patch(`${route_url.header}/wo/teco/${userDetail.res.NIK}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
+        axios.patch(`${route_url.header}/wo/teco/${wo_tasks.WoNumber}`,{NIK:userDetail.res.NIK},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             alert(`Work order telah complete`)
@@ -174,7 +172,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
             axios.patch(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
             .then(response=>{
                 console.log(response.data)
-                alert(`Work order berubah status menjadi ${wo_tasks.Status == 1 ? 'dikerjakan':'close'}`)
+                alert(`Work order berubah Status menjadi ${wo_tasks.Status == 1 ? 'dikerjakan':'close'}`)
                 refresh()
                 this.setState({isVisibleState:false})
                 this.props.navigation.goBack()
@@ -222,7 +220,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={wo_tasks.Status == 1 || wo_tasks.Status == 3 ? this._renderItemTugas:this._renderItemTugasCheckbox}
+                                    renderItem={(wo_tasks.Status == 1 || wo_tasks.Status == 3) && !this._isTeco() ? this._renderItemTugas:this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
@@ -230,16 +228,16 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         </View>
                     )}
                 </ScrollView>
-                {wo_tasks.Status == 1 || wo_tasks.Status == 2 ? (
+                {(wo_tasks.Status == 1 || wo_tasks.Status == 2) && !this._isTeco() ? (
                     <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
                         <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks.Status == 1 ? 'Kerjakan':'Close'}/>
                     </View>
-                ): wo_task.Status == 3 && userDetail.res.Jabatan == "PRODUCTION SUPERVISOR" ? (<View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
+                ): wo_tasks.Status == 3 && this._isTeco() ? (<View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
                     <Button onPress={this._alertTeco} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title={'Complete'}/>
-                </View>) : 
+                </View>) : !this._isTeco() ?
                     <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
-                        <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:colors.abu_subtitle}} title={'Close'}/>
-                    </View>}
+                        <Button disabled={true} buttonStyle={{borderRadius:10,backgroundColor:colors.abu_subtitle}} title={'C'}/>
+                    </View> : null}
                 <LoadingState isVisible={isVisibleState}/>
             </View>
         )

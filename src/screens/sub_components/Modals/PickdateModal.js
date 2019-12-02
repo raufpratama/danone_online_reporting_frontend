@@ -19,7 +19,7 @@ const months = [[
     { label: 'Hockey', value: 'hockey' },
 ]]
 
-const PickdateModal = ({isPickdateModalVisible,HandleModal}) => {
+const PickdateModal = ({isPickdateModalVisible,HandleModal,HandleStartDate,HandleEndDate,endDate,startDate}) => {
     return (
         <Modal
         isVisible={isVisible}
@@ -32,8 +32,15 @@ const PickdateModal = ({isPickdateModalVisible,HandleModal}) => {
         animationOutTiming={300}
     >
         <View style={{padding:16,borderRadius:10,backgroundColor:colors.putih}}>
-            <View style={{justifyContent:'center',alignItems:'center'}}>
-                <RNPickerSelect/>
+            <View style={{marginVertical:10}}>
+                <Text>Select start date</Text>
+                <Text>{}</Text>
+                <Button onPress={HandleStartDate} title='Select date'/>
+            </View>
+            <View style={{marginVertical:10}}>
+                <Text>Select end date</Text>
+                <Text>{}</Text>
+                <Button onPress={HandleEndDate} title='Select date'/>
             </View>
         </View>
     </Modal>
