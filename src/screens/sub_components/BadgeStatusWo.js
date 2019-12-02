@@ -11,10 +11,10 @@ app.text = (statusKode) =>{
             status = 'Working'
         break
         case 3 : 
-            status = 'Submit'
+            status = 'Submitted'
         break
         case 4 :
-            status = 'Close'
+            status = 'Completed'
     }
     return status
 }
@@ -32,7 +32,7 @@ app.color = (statusKode) => {
             badgeColor = color.abu_placeholder
         break
         case 4 :
-            badgeColor = color.abuabu
+            badgeColor = color.blue_link
     }
     return badgeColor
 }

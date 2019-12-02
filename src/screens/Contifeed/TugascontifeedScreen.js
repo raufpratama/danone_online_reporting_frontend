@@ -113,11 +113,11 @@ class TugascontifeedScreen extends Component {
     _refresh = (kondisi) => {
         const { userDetail } = this.props;
         console.log(userDetail.res.token)
-        axios.get(`${route_url.header}/wo/list/${area.modulfill}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+        axios.get(`${route_url.header}/wo/list/${area.contifeed}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             this.setState({
-            wo_tasks:response.data.res.filter(ress=>ress.Status !== 3),
+            wo_tasks:response.data.res.filter(ress=>ress.Status !== 4),
             loading:false,
             network:true
         })})
@@ -135,22 +135,22 @@ class TugascontifeedScreen extends Component {
                 <View style={{elevation:4,borderRadius:5,paddingHorizontal:13,paddingVertical:14}}>
                     <View style={{flexDirection:'row',height:160}}>
                         <View style={{width:135,justifyContent:'space-evenly'}}>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>WO number</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Work center</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Planned Duration</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Description</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Personel</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Tanggal</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Status</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>WO number :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Work center :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Planned Duration :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Description :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Personel :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Tanggal :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Status :</Text>
                         </View>
                         <View style={{justifyContent:'space-evenly'}}>
-                            <Text style={{fontSize:13}}>: {item.WoNumber}</Text>
-                            <Text style={{fontSize:13}}>: SPS</Text>
-                            <Text style={{fontSize:13}}>: {JSON.parse(item.JSONData).plannedDuration}</Text>
-                            <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(item.JSONData).description.full}</Text>
-                            <Text style={{fontSize:13}}>: {item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
-                            <Text style={{fontSize:13}}>: {moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
-                            <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:Badger.color(item.Status)}}>
+                            <Text style={{fontSize:13}}>{item.WoNumber}</Text>
+                            <Text style={{fontSize:13}}>SPS</Text>
+                            <Text style={{fontSize:13}}>{JSON.parse(item.JSONData).plannedDuration}</Text>
+                            <Text style={{fontSize:12,width:'90%'}} numberOfLines={2}>{JSON.parse(item.JSONData).description.full}</Text>
+                            <Text style={{fontSize:13}}>{item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
+                            <Text style={{fontSize:13}}>{moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
+                            <View style={{paddingHorizontal:5,paddingVertical:3,maxWidth:80,alignItems:'center',borderRadius:10,backgroundColor:Badger.color(item.Status)}}>
                                 <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{Badger.text(item.Status)}</Text>
                             </View>
                         </View>

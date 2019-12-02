@@ -9,6 +9,7 @@ import LoadingState from '../sub_components/LoadingState';
 import { updateFORM, updateWO } from '../../redux/actions/formwoactions'
 import Badger from  '../sub_components/BadgeStatusWo';
 
+const ae_mp = ["ASSET ENGINEER","MAINTENANCE PLANNER"];
 const colors = require('../../assets/utils/colors')
 const route_url = require('../../assets/utils/urls')
 const HeaderTitle = ({subtitle}) => {
@@ -37,25 +38,31 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     componentDidMount = () => {
         console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
         console.disableYellowBox = true;
+        this._refresh()
+        this._who_is_match_with_wo()
+    }
+
+    _refresh = () => {
         const { detail_wo,wo_tasks } = this.state;
         const { userDetail, update_WO, wo } = this.props
         console.log(detail_wo)
+        console.log(`ini wo tasks ${JSON.stringify(this.state.wo_tasks)}`)
         console.log(wo.length > 0 && wo.id_wo == wo_tasks.ID)
         console.log(`id wo ${JSON.stringify(wo_tasks)}`)
         console.log(' ini wo di redux ' + JSON.stringify(wo))
-        if(Object.keys(wo).length > 0 && wo.id_wo == wo_tasks.ID) {
-            this.setState({detail_wo:wo.res,loading:false})
-        } else {
-            axios.get(`${route_url.header}/wo/detail/${wo_tasks.WoNumber}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
-            .then(response=>{
-                console.log(response.data)
-                const temp = response.data
-                temp.id_wo = wo_tasks.ID
-                update_WO(temp)
-                this.setState({detail_wo:response.data.res,loading:false})
-            })
-            .catch(e=>console.log(`terjadi kesalahan ${e}`))
-        }
+        axios.get(`${route_url.header}/wo/detail/${Object.keys(wo).length > 0 ? wo[0].WoNumber : wo_tasks.WoNumber}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+        .then(response=>{
+            console.log(response.data)
+            const temp = response.data.res
+            console.log(response.data.res.filter(datas=>datas.ID == 9)[0])
+            update_WO(temp)
+            this.setState({detail_wo:response.data.res,loading:false})
+        })
+        .catch(e=>console.log(`terjadi kesalahan ${e}`))
+    }
+
+    componentWillUnmount = () => {
+        this._refresh();
     }
 
     _renderItemInformasi = () => {
@@ -90,9 +97,16 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     _renderItemTugasCheckbox = ({item}) => {
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
-                <CheckBox checked={this.state.wo_tasks.Status == 3 || this.state.wo_tasks.Status == 4 ? true : this.props.form.includes(item.ID)} onPress={()=>this.props.navigation.navigate('Uploadphoto',{general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
+                <CheckBox checked={this.state.wo_tasks.Status == 3 || this.state.wo_tasks.Status == 4 || item.ImgBefore !== null && item.ImgAfter !==null} onPress={()=>{
+                    this.props.navigation.navigate('Uploadphoto',{status:this.state.wo_tasks.Status,refresh:this._refresh,general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})
+                }} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
             </View>
         )
+    }
+
+    _who_is_match_with_wo = () => {
+        console.log(this.props.userDetail.res.NIK == this.state.wo_tasks.Who)
+        return this.props.userDetail.res.NIK == this.state.wo_tasks.Who
     }
 
     _isTeco = () => {
@@ -108,8 +122,8 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     }
 
     _filterObject = (id) => {
-        const filter_data = this.props.wo.res.filter(ids => {return ids.ID == id})
-        return filter_data[0]
+        const filter_data = this.props.wo.filter(ids => {return ids.ID == id})[0]
+        return filter_data
     }
 
     _alertAccept = () => {
@@ -168,12 +182,13 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         const { userDetail, form } = this.props;
         console.log(userDetail)
         console.log(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`)
-        if(wo_tasks.Status == 1 || wo_tasks.Status == 2 && form.length == detail_wo.length) {
+        console.log(wo_tasks.Status == 1 || wo_tasks.Status == 2 && detail_wo.some(wo_task=>wo_task.ImgBefore !==null && wo_task.ImgAfter !== null))
+        if(wo_tasks.Status == 1 || wo_tasks.Status == 2 && detail_wo.some(wo_task=>wo_task.ImgBefore !==null && wo_task.ImgAfter !== null)) {
             this.setState({isVisibleState:true})
             axios.patch(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
             .then(response=>{
                 console.log(response.data)
-                alert(`Work order berubah Status menjadi ${wo_tasks.Status == 1 ? 'dikerjakan':'close'}`)
+                alert(`Work order berubah Status menjadi ${wo_tasks.Status == 1 ? 'dikerjakan':'Submitted'}`)
                 refresh()
                 this.setState({isVisibleState:false})
                 this.props.navigation.goBack()
@@ -221,7 +236,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={(wo_tasks.Status == 1 || wo_tasks.Status == 3) && !this._isTeco() ? this._renderItemTugas:this._renderItemTugasCheckbox}
+                                    renderItem={(wo_tasks.Status == 1 || wo_tasks.Status == 3) && !this._isTeco() ? this._renderItemTugas: ae_mp.includes(userDetail.res.Jabatan) ? this._renderItemTugas : this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
@@ -229,16 +244,13 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         </View>
                     )}
                 </ScrollView>
-                {(wo_tasks.Status == 1 || wo_tasks.Status == 2) && !this._isTeco() ? (
+                {(wo_tasks.Status == 1 || wo_tasks.Status == 2) && !this._isTeco() && this._who_is_match_with_wo() && !ae_mp.includes(userDetail.res.Jabatan)? (
                     <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
-                        <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks.Status == 1 ? 'Kerjakan':'Close'}/>
+                        <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks.Status == 1 ? 'Kerjakan':'Submit'}/>
                     </View>
                 ): wo_tasks.Status == 3 && this._isTeco() ? (<View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
                     <Button onPress={this._alertTeco} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title={'Complete'}/>
-                </View>) : !this._isTeco() ?
-                    <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
-                        <Button disabled={true} buttonStyle={{borderRadius:10,backgroundColor:colors.abu_subtitle}} title={'C'}/>
-                    </View> : null}
+                </View>) : null}
                 <LoadingState isVisible={isVisibleState}/>
             </View>
         )

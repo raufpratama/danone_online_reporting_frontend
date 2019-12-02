@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, DatePickerAndroid, TouchableWithoutFeedback, Alert, StyleSheet, Linking } from 'react-native'
+import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, DatePickerAndroid, TouchableWithoutFeedback, Alert, StyleSheet, Linking, ScrollView } from 'react-native'
 import { connect } from 'react-redux'
 import axios from 'axios'
 import { Icon, Button } from 'react-native-elements'
@@ -11,6 +11,7 @@ import { userLogin, userLogout } from '../../redux/actions/useractions'
 import moment from 'moment'
 import ExportexceldateModal from '../sub_components/Modals/ExportexceldateModal'
 import SearchbydateModal from '../sub_components/Modals/SearchbydateModal'
+import Badger from  '../sub_components/BadgeStatusWo';
 
 const dummy_wo_task = [
     {
@@ -114,7 +115,7 @@ class TugascontifeedScreen extends Component {
     _refresh = (kondisi) => {
         const { userDetail } = this.props;
         console.log(userDetail.res.token)
-        axios.get(`${route_url.header}/wo/list/${area.modulfill}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+        axios.get(`${route_url.header}/wo/list/${area.contifeed}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             this.setState({
@@ -137,23 +138,23 @@ class TugascontifeedScreen extends Component {
                 <View style={{elevation:4,borderRadius:5,paddingHorizontal:13,paddingVertical:14}}>
                     <View style={{flexDirection:'row',height:160}}>
                         <View style={{width:135,justifyContent:'space-evenly'}}>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>WO number</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Work center</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Planned Duration</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Description</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Personel</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Tanggal</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Status</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>WO number :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Work center :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Planned Duration :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Description :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Personel :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Tanggal :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Status :</Text>
                         </View>
                         <View style={{justifyContent:'space-evenly'}}>
-                            <Text style={{fontSize:13}}>: {item.WoNumber}</Text>
-                            <Text style={{fontSize:13}}>: SPS</Text>
-                            <Text style={{fontSize:13}}>: {JSON.parse(item.JSONData).plannedDuration}</Text>
-                            <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(item.JSONData).description.full}</Text>
-                            <Text style={{fontSize:13}}>: {item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
-                            <Text style={{fontSize:13}}>: {moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
-                            <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:item.Status == 1 ? colors.hijau_benar : item.Status == 2 ? colors.kuning : item.Status == 3 ? colors.abu_placeholder : colors.blue_link}}>
-                                <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{item.Status == 1 ? "Open" : item.Status == 2 ? "Working" : item.Status == 3 ? "Submit" : "Close"}</Text>
+                            <Text style={{fontSize:13}}>{item.WoNumber}</Text>
+                            <Text style={{fontSize:13}}>SPS</Text>
+                            <Text style={{fontSize:13}}>{JSON.parse(item.JSONData).plannedDuration}</Text>
+                            <Text style={{fontSize:12,width:'90%'}} numberOfLines={2}>{JSON.parse(item.JSONData).description.full}</Text>
+                            <Text style={{fontSize:13}}>{item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
+                            <Text style={{fontSize:13}}>{moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
+                            <View style={{paddingHorizontal:5,paddingVertical:3,maxWidth:80,alignItems:'center',borderRadius:10,backgroundColor:Badger.color(item.Status)}}>
+                                <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{Badger.text(item.Status)}</Text>
                             </View>
                         </View>
                     </View>
@@ -236,8 +237,8 @@ class TugascontifeedScreen extends Component {
                     </View>
                 ) : !network ? (
                     <ErrorScreen refresh={this._refresh}/>
-                ) : wo_tasks.length > 0 ? (
-                    <View>
+                ) :(
+                    <ScrollView>
                         {console.log(belum_dikerjakan.length)}
                         <Text style={{marginLeft:13,marginHorizontal:10,fontSize:18,fontWeight:'bold'}}>Belum dikerjakan</Text>
                         {belum_dikerjakan.length <= 0 ? (
@@ -283,12 +284,7 @@ class TugascontifeedScreen extends Component {
                                 keyExtractor={(item,id)=>id.toString()}
                             />
                         )}
-                    </View>
-                ) : (
-                    <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-                        <Image source={list_placeholder} style={{width:136,height:185}} resizeMode='contain'/>
-                        <Text style={{fontSize:12,width:254,color:colors.abu_placeholder,textAlign:'center'}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
-                    </View>
+                    </ScrollView>
                 )}
                 {this._renderFloatingAction()}
                 <Text onPress={this._alertLogout} style={{color:colors.abu_placeholder,textDecorationLine:'underline',alignSelf:'center',paddingBottom:20}}>Logout</Text>

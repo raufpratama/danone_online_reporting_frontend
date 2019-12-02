@@ -9,6 +9,7 @@ import DocumentPicker from 'react-native-document-picker';
 import ErrorScreen from '../sub_components/ErrorScreen'
 import { userLogin, userLogout } from '../../redux/actions/useractions'
 import moment from 'moment'
+import ExportexceldateModal from '../sub_components/Modals/ExportexceldateModal'
 import Badger from  '../sub_components/BadgeStatusWo';
 
 const dummy_wo_task = [
@@ -28,13 +29,14 @@ const environment = require('../../assets/utils/environment')
 const colors = require('../../assets/utils/colors')
 const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 
-class TugascontifeedScreen extends Component {
+class RiwayatcontifeedScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
             wo_tasks:'',
             loading:true,
             network:true,
+            isVisibleExportModal:false,
         }
     }
 
@@ -104,18 +106,18 @@ class TugascontifeedScreen extends Component {
 
     _logout = async() => {
         await AsyncStorage.removeItem(environment.ASYNC_USER_TOKEN)
-        this.props.user_Logout([])
         this.props.navigation.navigate('Login')
+        this.props.user_Logout()
     }
 
     _refresh = (kondisi) => {
         const { userDetail } = this.props;
         console.log(userDetail.res.token)
-        axios.get(`${route_url.header}/wo/list/${area.modulfill}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+        axios.get(`${route_url.header}/wo/list/${area.contifeed}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             this.setState({
-            wo_tasks:response.data.res.filter(ress=>ress.Status == 3 || ress.Status == 4),
+            wo_tasks:response.data.res.filter(ress=> ress.Status == 4),
             loading:false,
             network:true
         })})
@@ -133,22 +135,22 @@ class TugascontifeedScreen extends Component {
                 <View style={{elevation:4,borderRadius:5,paddingHorizontal:13,paddingVertical:14}}>
                     <View style={{flexDirection:'row',height:160}}>
                         <View style={{width:135,justifyContent:'space-evenly'}}>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>WO number</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Work center</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Planned Duration</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Description</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Personel</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Tanggal</Text>
-                            <Text style={{fontSize:13,fontWeight:'700'}}>Status</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>WO number :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Work center :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Planned Duration :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Description :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Personel :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Tanggal :</Text>
+                            <Text style={{fontSize:13,fontWeight:'700'}}>Status :</Text>
                         </View>
                         <View style={{justifyContent:'space-evenly'}}>
-                            <Text style={{fontSize:13}}>: {item.WoNumber}</Text>
-                            <Text style={{fontSize:13}}>: SPS</Text>
-                            <Text style={{fontSize:13}}>: {JSON.parse(item.JSONData).plannedDuration}</Text>
-                            <Text style={{fontSize:13}} numberOfLines={2}>: {JSON.parse(item.JSONData).description.full}</Text>
-                            <Text style={{fontSize:13}}>: {item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
-                            <Text style={{fontSize:13}}>: {moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
-                            <View style={{paddingHorizontal:5,paddingVertical:3,width:60,alignItems:'center',borderRadius:10,backgroundColor:Badger.color(item.Status)}}>
+                            <Text style={{fontSize:13}}>{item.WoNumber}</Text>
+                            <Text style={{fontSize:13}}>SPS</Text>
+                            <Text style={{fontSize:13}}>{JSON.parse(item.JSONData).plannedDuration}</Text>
+                            <Text style={{fontSize:12,width:'90%'}} numberOfLines={2}>{JSON.parse(item.JSONData).description.full}</Text>
+                            <Text style={{fontSize:13}}>{item.Who}-{item.WhoName.replace(' ','-').toUpperCase()}</Text>
+                            <Text style={{fontSize:13}}>{moment(item.TanggalAktif).format('DD MMMM YYYY')}</Text>
+                            <View style={{paddingHorizontal:5,paddingVertical:3,maxWidth:80,alignItems:'center',borderRadius:10,backgroundColor:Badger.color(item.Status)}}>
                                 <Text style={{fontSize:13,color:colors.putih,fontWeight:'700'}}>{Badger.text(item.Status)}</Text>
                             </View>
                         </View>
@@ -164,6 +166,7 @@ class TugascontifeedScreen extends Component {
               // Use `new Date()` for current date.
               // May 25 2020. Month 0 is January.
               date: new Date(),
+              mode:'calendar',
             });
             if (action !== DatePickerAndroid.dismissedAction) {
               // Selected year, month (0-11), day
@@ -175,7 +178,7 @@ class TugascontifeedScreen extends Component {
 
     _renderFloatingAction = () => {
         if(this.props.isLogin) {
-            if(this.props.userDetail.res.Jabatan == "MAINTENANCE PLANNER")
+            if(this.props.userDetail.res.Jabatan == "MAINTENANCE PLANNER") {
                 return (
                     <ActionButton buttonColor="rgba(231,76,60,1)">
                         <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={this._document_Pick}>
@@ -184,10 +187,25 @@ class TugascontifeedScreen extends Component {
                     </ActionButton>
                 ) 
             }   else if(managers.includes(this.props.userDetail.res.Jabatan)) {
-            //     <ActionButton buttonColor="rgba(231,76,60,1)" renderIcon={<Icon />} onPress={}>
-            //     </ActionButton>
-            // }
-    }}
+                return (
+                    <ActionButton buttonColor="rgba(231,76,60,1)">
+                        <ActionButton.Item buttonColor='green' title="Export excel" onPress={this._handleExportExcelModal}>
+                            <Icon type='ionicon' name="md-create" color={'white'} style={styles.actionButtonIcon} />
+                        </ActionButton.Item>
+                        <ActionButton.Item buttonColor='#9b59b6' title="Search WO by date" onPress={this._datePicker}>
+                            <Icon type='ionicon' name="md-search" style={styles.actionButtonIcon} />
+                        </ActionButton.Item>
+                    </ActionButton>
+                )
+            }
+    } else {
+        return null
+    }
+    }
+
+    _handleExportExcelModal = () => {
+        this.setState({isVisibleExportModal:!this.state.isVisibleExportModal})
+    }
 
     render() {
         const { loading, wo_tasks, network } = this.state;
@@ -213,8 +231,12 @@ class TugascontifeedScreen extends Component {
                         <Text style={{fontSize:12,width:254,color:colors.abu_placeholder,textAlign:'center'}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
                     </View>
                 )}
-                {this._renderFloatingAction()}
+                {wo_tasks.length <=0 ? (
+                    <Button title='refresh' buttonStyle={{backgroundColor:colors.primary_color,borderRadius:20,width:'40%',alignSelf:'center',marginVertical:20}}/>
+                ) : null}
+                {isLogin ? this._renderFloatingAction() : null}
                 <Text onPress={this._alertLogout} style={{color:colors.abu_placeholder,textDecorationLine:'underline',alignSelf:'center',paddingBottom:20}}>Logout</Text>
+                <ExportexceldateModal isVisible={this.state.isVisibleExportModal} handlemodal={this._handleExportExcelModal}/>
             </View>
         )
     }
@@ -230,7 +252,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         user_Login : (data)=>dispatch(userLogin(data)),
-        user_Logout:(data)=>dispatch(userLogout(data))
+        user_Logout:()=>dispatch(userLogout())
     }
 }
 
@@ -242,4 +264,4 @@ const styles = StyleSheet.create({
     },
   });
 
-export default connect(mapStateToProps,mapDispatchToProps)(TugascontifeedScreen)
+export default connect(mapStateToProps,mapDispatchToProps)(RiwayatcontifeedScreen)

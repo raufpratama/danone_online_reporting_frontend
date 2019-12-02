@@ -29,7 +29,6 @@ class LoginScreen extends Component {
         if(NIK.length > 0 && password.length >0) {
             axios.post(`${route_url.header}/user/login`,{NIK,Password:password})
             .then(async response=>{
-                if(response.data.res !== "NIK salah" || response.data.res !== "Password salah") {
                     console.log(response.data)
                     const respon = response.data
                     respon.res.nik = NIK
@@ -37,12 +36,13 @@ class LoginScreen extends Component {
                     await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(respon))
                     this.setState({isVisible:false})
                     this.props.navigation.navigate(managers.includes(response.data.res.Jabatan) ? 'Manager' : 'App')
-                } else {
+            })
+            .catch(e=>{
+                if(e.response.status == 401) {
+                    alert('NIK/Password salah')
                     this.setState({isVisible:false})
-                    alert('NIK/password salah')
                 }
             })
-            .catch(e=>console.log(`terjadi kesalahan ${e}`))
         }
     }
 

@@ -13,6 +13,7 @@ import { updateWO, updateFORM } from '../../redux/actions/formwoactions'
 const colors = require('../../assets/utils/colors')
 const plus = require('../../assets/images/plus.png')
 const route_url = require('../../assets/utils/urls')
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 const options = {
     storageOptions: {
         skipBackup: true,
@@ -57,6 +58,8 @@ class UploadphotocontifeedScreen extends Component {
             wo_number:props.navigation.getParam('wo_number',''),
             wo_item_id:props.navigation.getParam('wo_item_id',''),
             done_item:props.navigation.getParam('done_item',''),
+            refresh:props.navigation.getParam('refresh',''),
+            status:props.navigation.getParam('status',''),
             image_before:props.navigation.getParam('general_wo').ImgBefore == null ? '' : route_url.header + props.navigation.getParam('general_wo').ImgBefore.replace('.',''),
             image_after:props.navigation.getParam('general_wo').ImgAfter == null ? '' : route_url.header + props.navigation.getParam('general_wo').ImgAfter.replace('.',''),
             image_placeholder:'https://www.bigw.com.au/medias/sys_master/images/images/h40/hed/12107450089502.jpg',
@@ -73,6 +76,7 @@ class UploadphotocontifeedScreen extends Component {
         console.disableYellowBox = true;
         // console.log(`ini state ${JSON.stringify(this.state)}`)
         console.log(`ini props wo ${JSON.stringify(this.props.wo)}`)
+        console.log(this.state.status)
         console.log('ini general wo ' + JSON.stringify(this.props.navigation.getParam('general_wo','')))
     }
 
@@ -108,45 +112,91 @@ class UploadphotocontifeedScreen extends Component {
     };
 
     _uploadPhoto = () => {
-        const { image_after, image_before,wo_number,form_data_before,form_data_after, wo_item_id  } = this.state;
+        const { image_after, image_before,wo_number,form_data_before,form_data_after, wo_item_id, refresh  } = this.state;
         const { userDetail, update_FORM } = this.props;
         const { ImgBefore, ImgAfter } = this.props.navigation.getParam('general_wo','')
         const edit_ImgBefore = `${route_url.header}${ImgBefore !== null ? ImgBefore.replace('.',''): ''}`
         const edit_ImgAfter = `${route_url.header}${ImgAfter !== null ? ImgBefore.replace('.',''): ''}`
-        if(image_before == edit_ImgBefore && image_after == edit_ImgAfter) {
-            this.props.navigation.goBack()
-        } else if(image_after.length > 0 && image_before.length >0) {
-            this.setState({isVisibleState:true})
-            axios({
-                headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
-                method:'POST',
-                url:`${route_url.header}/wo/picBefore/${wo_number}`,
-                data:form_data_before
-            })
-            .then(response=>{
-                console.log(response.data)
-                // console.log(`ini wo props wo ${JSON.stringify(this.props.wo)}`)
-                update_FORM(wo_item_id)
-                // userDetail.wo_item_id = [...wo_item_id]
-                // await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(userDetail))
-                this._editRedux(response.data.res.path,"ImgBefore")
-            })
-            .catch(e=>console.log(`terjadi kesalahan di upload foto before ${e}`))
-
-            axios({
-                headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
-                method:'POST',
-                url:`${route_url.header}/wo/picAfter/${wo_number}`,
-                data:form_data_after
-            })
-            .then(response=>{
-                console.log(response.data)
-                this._editRedux(response.data.res.path,"ImgAfter")
-                this.setState({isVisibleState:false})
-                this.props.navigation.goBack();
-                // console.log(this.props.wo)
-            })
-            .catch(e=>console.log(`terjadi kesalahan di upload foto after ${e}`))
+        if(image_after.length > 0 || image_before.length >0) {
+            if(image_before.length > 0 && edit_ImgBefore !== image_before) {
+                this.setState({isVisibleState:true})
+                axios({
+                    headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
+                    method:'POST',
+                    url:`${route_url.header}/wo/picBefore/${wo_number}`,
+                    data:form_data_before
+                })
+                .then(response=>{
+                    console.log(response.data)
+                    // console.log(`ini wo props wo ${JSON.stringify(this.props.wo)}`)
+                    update_FORM(wo_item_id)
+                    // userDetail.wo_item_id = [...wo_item_id]
+                    // await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(userDetail))
+                    // this._editRedux(response.data.res.path,"ImgBefore")
+                    if(image_after.length > 0 && edit_ImgAfter !== image_after) {
+                        axios({
+                            headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
+                            method:'POST',
+                            url:`${route_url.header}/wo/picAfter/${wo_number}`,
+                            data:form_data_after
+                        })
+                        .then(response=>{
+                            console.log(response.data)
+                            // this._editRedux(response.data.res.path,"ImgAfter")
+                            refresh();
+                            this.props.navigation.goBack();
+                            this.setState({isVisibleState:false})
+                            // console.log(this.props.wo)
+                        })
+                        .catch(e=>console.log(`terjadi kesalahan di upload foto after ${e}`))
+                    } else {
+                        this.props.navigation.goBack();
+                        refresh();
+                        this.setState({isVisibleState:false})
+                    }
+                })
+                .catch(e=>console.log(`terjadi kesalahan di upload foto before ${e}`))
+            } else if(image_after.length > 0 && edit_ImgAfter !== image_after) {
+                    this.setState({isVisibleState:true})
+                    axios({
+                        headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
+                        method:'POST',
+                        url:`${route_url.header}/wo/picAfter/${wo_number}`,
+                        data:form_data_after
+                    })
+                    .then(response=>{
+                        console.log(response.data)
+                        // console.log(`ini wo props wo ${JSON.stringify(this.props.wo)}`)
+                        update_FORM(wo_item_id)
+                        // userDetail.wo_item_id = [...wo_item_id]
+                        // await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(userDetail))
+                        // this._editRedux(response.data.res.path,"ImgBefore")
+                        if(image_before.length > 0 && edit_ImgBefore !== image_before) {
+                            axios({
+                                headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
+                                method:'POST',
+                                url:`${route_url.header}/wo/picBefore/${wo_number}`,
+                                data:form_data_before
+                            })
+                            .then(response=>{
+                                console.log(response.data)
+                                // this._editRedux(response.data.res.path,"ImgAfter")
+                                refresh();
+                                this.props.navigation.goBack();
+                                this.setState({isVisibleState:false})
+                                // console.log(this.props.wo)
+                            })
+                            .catch(e=>console.log(`terjadi kesalahan di upload foto after ${e}`))
+                        } else {
+                            refresh();
+                            this.props.navigation.goBack();
+                            this.setState({isVisibleState:false})
+                        }
+                    })
+                    .catch(e=>console.log(`terjadi kesalahan di upload foto before ${e}`))
+                } else {
+                    this.props.navigation.goBack()
+                }
         } else {
             alert('Kamu belum upload semua form foto')
         }
@@ -227,6 +277,9 @@ class UploadphotocontifeedScreen extends Component {
     render() {
         const { wo_task, image_before, image_after, header_title, image_placeholder, isVisibleState } = this.state;
         const images = [{source:{uri:image_before},title:'Image Before'},{source:{uri:image_after},title:'Image After'}]
+        const { ImgBefore, ImgAfter } = this.props.navigation.getParam('general_wo','')
+        const edit_ImgBefore = `${route_url.header}${ImgBefore !== null ? ImgBefore.replace('.',''): ''}`
+        const edit_ImgAfter = `${route_url.header}${ImgAfter !== null ? ImgBefore.replace('.',''): ''}`
         return (
             <View style={{flex:1,backgroundColor:colors.background_screen}}>
                 <Header
@@ -244,7 +297,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Text style={{fontWeight:'700',fontSize:14}}>Before</Text>
                             <Menu
                                 ref={this.setMenuRef}
-                                button={<Icon type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
+                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan)} type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
                             > 
                                 <MenuItem onPress={()=>this.hideMenu("image_before")}>Hapus foto</MenuItem>
                             </Menu>
@@ -269,7 +322,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Text style={{fontWeight:'700',fontSize:14}}>After</Text>
                             <Menu
                                 ref={this.setMenuRef_}
-                                button={<Icon type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
+                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan)} type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
                             >
                                 <MenuItem onPress={()=>this.hideMenu("image_after")}>Hapus foto</MenuItem>
                             </Menu>
@@ -290,7 +343,7 @@ class UploadphotocontifeedScreen extends Component {
                         </View>
                     </View>
                 </ScrollView>
-                {!this._isTeco() ? (
+                {!this._isTeco() && !managers.includes(this.props.userDetail.res.Jabatan) ? (
                     <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
                         <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
                     </View>
