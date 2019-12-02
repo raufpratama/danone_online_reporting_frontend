@@ -54,22 +54,25 @@ class UploadphotocontifeedScreen extends Component {
         this.state = {
             header_title:props.navigation.getParam('header_title',''),
             wo_task:props.navigation.getParam('wo_task',''),
+            wo_number:props.navigation.getParam('wo_number',''),
             wo_item_id:props.navigation.getParam('wo_item_id',''),
             done_item:props.navigation.getParam('done_item',''),
-            image_before:props.navigation.getParam('general_wo').imgBefore == null ? '' : route_url.header + props.navigation.getParam('general_wo').imgBefore.replace('.',''),
-            image_after:props.navigation.getParam('general_wo').imgAfter == null ? '' : route_url.header + props.navigation.getParam('general_wo').imgAfter.replace('.',''),
+            image_before:props.navigation.getParam('general_wo').ImgBefore == null ? '' : route_url.header + props.navigation.getParam('general_wo').ImgBefore.replace('.',''),
+            image_after:props.navigation.getParam('general_wo').ImgAfter == null ? '' : route_url.header + props.navigation.getParam('general_wo').ImgAfter.replace('.',''),
             image_placeholder:'https://www.bigw.com.au/medias/sys_master/images/images/h40/hed/12107450089502.jpg',
             form_data_before:'',
             form_data_after:'',
             isImageViewVisible:false,
             isVisibleState:false,
         }
-        console.log(props.navigation.getParam('general_wo').imgBefore !== null)
+        console.log(props.navigation.getParam('general_wo').ImgBefore !== null)
     }
 
     componentDidMount = () => {
         console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
         console.disableYellowBox = true;
+        // console.log(`ini state ${JSON.stringify(this.state)}`)
+        console.log(`ini props wo ${JSON.stringify(this.props.wo)}`)
         console.log('ini general wo ' + JSON.stringify(this.props.navigation.getParam('general_wo','')))
     }
 
@@ -105,39 +108,38 @@ class UploadphotocontifeedScreen extends Component {
     };
 
     _uploadPhoto = () => {
-        const { image_after, image_before,wo_item_id,form_data_before,form_data_after, done_item  } = this.state;
+        const { image_after, image_before,wo_number,form_data_before,form_data_after, wo_item_id  } = this.state;
         const { userDetail, update_FORM } = this.props;
-        // const { imgBefore, imgAfter } = this.props.navigation.getParam('general_wo','')
-        // const edit_imgbefore = `${route_url.header}${imgBefore.replace('.','')}`
-        // const edit_imgafter = `${route_url.header}${imgAfter.replace('.','')}`
-        // if(image_before == edit_imgbefore && image_after == edit_imgafter) {
-        //     this.props.navigation.goBack()
-        // }
-        if(image_after.length > 0 && image_before.length >0) {
+        const { ImgBefore, ImgAfter } = this.props.navigation.getParam('general_wo','')
+        const edit_ImgBefore = `${route_url.header}${ImgBefore !== null ? ImgBefore.replace('.',''): ''}`
+        const edit_ImgAfter = `${route_url.header}${ImgAfter !== null ? ImgBefore.replace('.',''): ''}`
+        if(image_before == edit_ImgBefore && image_after == edit_ImgAfter) {
+            this.props.navigation.goBack()
+        } else if(image_after.length > 0 && image_before.length >0) {
             this.setState({isVisibleState:true})
             axios({
                 headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
                 method:'POST',
-                url:`${route_url.header}/wo/picBefore/${wo_item_id}`,
+                url:`${route_url.header}/wo/picBefore/${wo_number}`,
                 data:form_data_before
             })
             .then(response=>{
                 console.log(response.data)
                 // console.log(`ini wo props wo ${JSON.stringify(this.props.wo)}`)
                 update_FORM(wo_item_id)
-                this._editRedux(response.data.res.path,"imgBefore")
+                this._editRedux(response.data.res.path,"ImgBefore")
             })
             .catch(e=>console.log(`terjadi kesalahan di upload foto before ${e}`))
 
             axios({
                 headers:{'Content-Type':'multipart/form-data','Authorization':`Bearer ${userDetail.res.token}`},
                 method:'POST',
-                url:`${route_url.header}/wo/picAfter/${wo_item_id}`,
+                url:`${route_url.header}/wo/picAfter/${wo_number}`,
                 data:form_data_after
             })
             .then(response=>{
                 console.log(response.data)
-                this._editRedux(response.data.res.path,"imgAfter")
+                this._editRedux(response.data.res.path,"ImgAfter")
                 this.setState({isVisibleState:false})
                 this.props.navigation.goBack();
                 // console.log(this.props.wo)
@@ -200,6 +202,7 @@ class UploadphotocontifeedScreen extends Component {
                 let form_data = new FormData();
                 form_data.append("file",{uri:response.uri,type:response.type,name:response.fileName});
                 form_data.append("nik",this.props.userDetail.res.nik);
+                form_data.append("ID",this.state.wo_item_id);
                 this.setState({
                     [image_key]: response.uri,
                     [image_key == "image_before" ? "form_data_before":"form_data_after"]:form_data
@@ -208,6 +211,10 @@ class UploadphotocontifeedScreen extends Component {
                 console.log(this.state.form_data_before)
             }
         })
+    }
+
+    _isTeco = () => {
+        return this.props.userDetail.res.Jabatan == "PRODUCTION SUPERVISOR" ? true : false
     }
 
     _handleImageViewVisible = () => {
@@ -236,7 +243,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Menu
                                 ref={this.setMenuRef}
                                 button={<Icon type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
-                            >
+                            > 
                                 <MenuItem onPress={()=>this.hideMenu("image_before")}>Hapus foto</MenuItem>
                             </Menu>
                         </View>
@@ -247,7 +254,7 @@ class UploadphotocontifeedScreen extends Component {
                                     <Image  source={{uri:image_before}} style={{borderWidth:1,width:100,height:130,borderRadius:5}} resizeMode='cover'/>
                                 </TouchableOpacity>
                             ) : (
-                                <TouchableWithoutFeedback onPress={()=>this._openCamera("image_before")}>
+                                <TouchableWithoutFeedback onPress={this._isTeco() ? null : ()=>this._openCamera("image_before")}>
                                     <View style={{justifyContent:'center',alignItems:'center',width:100,height:130,borderRadius:1,borderWidth:1,borderStyle:'dashed',borderColor:colors.abu_placeholder}}>
                                         <Image source={plus} style={{width:50,height:50}} resizeMode='contain'/>
                                     </View>
@@ -272,7 +279,7 @@ class UploadphotocontifeedScreen extends Component {
                                     <Image source={{uri:image_after}} style={{borderWidth:1,width:100,height:130,borderRadius:5}} resizeMode='cover'/>
                                 </TouchableOpacity>
                             ) : (
-                                <TouchableWithoutFeedback onPress={()=>this._openCamera("image_after")}>
+                                <TouchableWithoutFeedback onPress={this._isTeco() ? null : ()=>this._openCamera("image_after")}>
                                     <View style={{justifyContent:'center',alignItems:'center',width:100,height:130,borderRadius:1,borderWidth:1,borderStyle:'dashed',borderColor:colors.abu_placeholder}}>
                                         <Image source={plus} style={{width:50,height:50}} resizeMode='contain'/>
                                     </View>
@@ -281,9 +288,11 @@ class UploadphotocontifeedScreen extends Component {
                         </View>
                     </View>
                 </ScrollView>
-                <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
-                    <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
-                </View>
+                {!this._isTeco() ? (
+                    <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
+                        <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
+                    </View>
+                ) : null}
                 <LoadingState isVisible={isVisibleState}/>
                 <ImageView
                     images={images}

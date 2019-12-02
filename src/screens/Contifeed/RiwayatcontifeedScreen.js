@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, TouchableWithoutFeedback, Alert, StyleSheet,ScrollView,RefreshControl } from 'react-native'
+import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, DatePickerAndroid, TouchableWithoutFeedback, Alert, StyleSheet, Linking } from 'react-native'
 import { connect } from 'react-redux'
 import axios from 'axios'
-import { Icon } from 'react-native-elements'
+import { Icon, Button } from 'react-native-elements'
 import ActionButton from 'react-native-action-button';
 import DocumentPicker from 'react-native-document-picker';
 
@@ -25,15 +25,15 @@ const list_placeholder = require('../../assets/images/list_placeholder.png')
 const area = require('../../assets/utils/area')
 const environment = require('../../assets/utils/environment')
 const colors = require('../../assets/utils/colors')
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 
-class RiwayatcontifeedScreen extends Component {
+class TugascontifeedScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
             wo_tasks:'',
             loading:true,
             network:true,
-            refresh:false,
         }
     }
 
@@ -55,6 +55,28 @@ class RiwayatcontifeedScreen extends Component {
               res.name,
               res.size
             );
+
+            let form_data = new FormData();
+            form_data.append("file",res);
+            form_data.append("nik",this.props.userDetail.res.nik)
+            console.log(`ini form data ${JSON.stringify(form_data)}`)
+            this.setState({loading:true})
+            axios({
+                headers:{
+                    'Authorization':`Bearer ${this.props.userDetail.res.token}`,
+                    'Content-Type':'multipart/form-data'
+                },
+                method:'POST',
+                url:`${route_url.header}/wo`,
+                data:form_data,
+            })
+            .then(async response=>{
+                console.log(response.data)
+                this._refresh()
+            })
+            .catch(e=>{
+                console.log(`trerjadi error upload pdf ${e}`)
+            })
           } catch (err) {
             if (DocumentPicker.isCancel(err)) {
               // User cancelled the picker, exit any dialogs or menus and move on
@@ -85,7 +107,7 @@ class RiwayatcontifeedScreen extends Component {
         this.props.navigation.navigate('Login')
     }
 
-    _refresh = () => {
+    _refresh = (kondisi) => {
         const { userDetail } = this.props;
         console.log(userDetail.res.token)
         axios.get(`${route_url.header}/wo/list/${area.modulfill}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
@@ -102,22 +124,6 @@ class RiwayatcontifeedScreen extends Component {
                 this.setState({network:false})
             }
         })
-    }
-
-    _onRefresh = () => {
-        this.setState({refresh:true})
-        const { userDetail } = this.props;
-        console.log(userDetail.res.token)
-        axios.get(`${route_url.header}/wo/list/${area.contiform}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
-        .then(response=>{
-            console.log(response.data)
-            this.setState({
-            wo_tasks:response.data.res.filter(ress=>ress.Status == 3),
-            loading:false,
-            refresh:false
-        })})
-        .catch(e=>console.log(`terjadi kesalahan ${e}`))
-
     }
 
     _renderItem = ({item}) => {
@@ -151,9 +157,40 @@ class RiwayatcontifeedScreen extends Component {
         )
     }
 
+    _datePicker = async() => {
+        try {
+            const {action, year, month, day} = await DatePickerAndroid.open({
+              // Use `new Date()` for current date.
+              // May 25 2020. Month 0 is January.
+              date: new Date(),
+            });
+            if (action !== DatePickerAndroid.dismissedAction) {
+              // Selected year, month (0-11), day
+            }
+          } catch ({code, message}) {
+            console.warn('Cannot open date picker', message);
+          }
+    }
+
+    _renderFloatingAction = () => {
+        if(this.props.isLogin) {
+            if(this.props.userDetail.res.Jabatan == "MAINTENANCE PLANNER")
+                return (
+                    <ActionButton buttonColor="rgba(231,76,60,1)">
+                        <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={this._document_Pick}>
+                            <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
+                        </ActionButton.Item>
+                    </ActionButton>
+                ) 
+            }   else if(managers.includes(this.props.userDetail.res.Jabatan)) {
+            //     <ActionButton buttonColor="rgba(231,76,60,1)" renderIcon={<Icon />} onPress={}>
+            //     </ActionButton>
+            // }
+    }}
+
     render() {
-        const { loading, wo_tasks, network, refresh } = this.state;
-        const { userDetail } = this.props;
+        const { loading, wo_tasks, network } = this.state;
+        const { userDetail, isLogin } = this.props;
         return (
             <View style={{flex:1}}>
                 {loading ? (
@@ -170,20 +207,12 @@ class RiwayatcontifeedScreen extends Component {
                         keyExtractor={(item,id)=>id.toString()}
                     />
                 ) : (
-                    <ScrollView refreshControl={<RefreshControl refreshing={refresh} onRefresh={this._onRefresh}/>} >
-                        <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-                            <Image source={list_placeholder} style={{width:136,height:185}} resizeMode='contain'/>
-                            <Text style={{fontSize:12,width:254,color:colors.abu_placeholder}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
-                        </View>
-                    </ScrollView>
+                    <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+                        <Image source={list_placeholder} style={{width:136,height:185}} resizeMode='contain'/>
+                        <Text style={{fontSize:12,width:254,color:colors.abu_placeholder,textAlign:'center'}} numberOfLines={2}>Tidak ada work order hari ini, atau anda sudah menyelesaikan semuanya</Text>
+                    </View>
                 )}
-                {userDetail.res.Jataban == "MAINTENANCE PLANNER" ? (
-                    <ActionButton buttonColor="rgba(231,76,60,1)">
-                        <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={this._document_Pick}>
-                            <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
-                        </ActionButton.Item>
-                    </ActionButton>
-                ) : null}
+                {this._renderFloatingAction()}
                 <Text onPress={this._alertLogout} style={{color:colors.abu_placeholder,textDecorationLine:'underline',alignSelf:'center',paddingBottom:20}}>Logout</Text>
             </View>
         )
@@ -192,7 +221,8 @@ class RiwayatcontifeedScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        userDetail:state.userreducer.user_detail
+        userDetail:state.userreducer.user_detail,
+        isLogin:state.userreducer.isLogin
     }
 }
 
@@ -211,4 +241,4 @@ const styles = StyleSheet.create({
     },
   });
 
-export default connect(mapStateToProps,mapDispatchToProps)(RiwayatcontifeedScreen)
+export default connect(mapStateToProps,mapDispatchToProps)(TugascontifeedScreen)

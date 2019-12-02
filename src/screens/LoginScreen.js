@@ -11,7 +11,6 @@ const agua = require('../assets/images/AGUA.png')
 const route_url = require('../assets/utils/urls')
 const colors = require('../assets/utils/colors')
 const environment = require('../assets/utils/environment')
-const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 
 class LoginScreen extends Component {
     constructor(props){
@@ -29,14 +28,14 @@ class LoginScreen extends Component {
         if(NIK.length > 0 && password.length >0) {
             axios.post(`${route_url.header}/user/login`,{NIK,Password:password})
             .then(async response=>{
-                if(response.data.res !== "NIK salah") {
+                if(response.data.res !== "NIK salah" || response.data.res !== "Password salah") {
                     console.log(response.data)
                     const respon = response.data
                     respon.res.nik = NIK
                     this.props.user_Login(respon)
                     await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(respon))
                     this.setState({isVisible:false})
-                    this.props.navigation.navigate(managers.includes(response.data.res.Jabatan) ? 'Manager' : 'App')
+                    this.props.navigation.navigate('App')
                 } else {
                     this.setState({isVisible:false})
                     alert('NIK/password salah')

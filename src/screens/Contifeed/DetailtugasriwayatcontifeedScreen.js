@@ -89,9 +89,13 @@ class DetailtugasriwayatcontifeedScreen extends Component {
     _renderItemTugasCheckbox = ({item}) => {
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
-                <CheckBox checked={false} onPress={()=>this.props.navigation.navigate('Uploadphoto',{general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_item_id:item.WoNumber,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
+                <CheckBox checked={this.state.wo_tasks.status == 3 ? true : this.props.form.includes(item.ID)} onPress={()=>this.props.navigation.navigate('Uploadphoto',{general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
             </View>
         )
+    }
+
+    _isTeco = () => {
+        return this.props.userDetail.res.Jabatan == "PRODUCTION SUPERVISOR" ? true : false
     }
 
     _renderItemTugas = ({item,index}) => {
@@ -102,9 +106,10 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         )
     }
 
+    _
+
     _filterObject = (id) => {
         const filter_data = this.props.wo.res.filter(ids => {return ids.ID == id})
-        console.log(filter_data[0])
         return filter_data[0]
     }
 
@@ -123,6 +128,40 @@ class DetailtugasriwayatcontifeedScreen extends Component {
             {cancelable: false},
         )
         // image == "image_before" ? this._menu.hide() : this.menu_.hide()
+    }
+
+    _alertTeco = () => {
+        const { wo_tasks } = this.state; 
+        Alert.alert('Perhatian','Apakah anda yakin complete WO ?',[
+            {
+                text: 'YA', onPress: () => this._Teco()
+            },
+            {
+                text: 'TIDAK',
+                onPress: () => console.log('Cancel Pressed'),
+                style: 'cancel',
+            },
+            ],
+            {cancelable: false},
+        )
+        // image == "image_before" ? this._menu.hide() : this.menu_.hide()
+    }
+
+    _Teco = () => {
+        const { wo_tasks, refresh, done_items, detail_wo } = this.state;
+        const { userDetail, form } = this.props;
+        console.log(userDetail)
+        console.log(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`)
+        this.setState({isVisibleState:true})
+        axios.patch(`${route_url.header}/wo/teco/${userDetail.res.NIK}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
+        .then(response=>{
+            console.log(response.data)
+            alert(`Work order telah complete`)
+            refresh()
+            this.setState({isVisibleState:false})
+            this.props.navigation.goBack()
+        })
+        .catch(e=>console.log(`terjadi kesalahan ${e}`))
     }
 
     _acceptWo = () => {
@@ -196,8 +235,11 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks.Status == 1 ? 'Kerjakan':'Close'}/>
                     </View>
                 ): wo_task.Status == 3 && userDetail.res.Jabatan == "PRODUCTION SUPERVISOR" ? (<View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
-                    <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={'Complete'}/>
-                </View>) : null}
+                    <Button onPress={this._alertTeco} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title={'Complete'}/>
+                </View>) : 
+                    <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
+                        <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:colors.abu_subtitle}} title={'Close'}/>
+                    </View>}
                 <LoadingState isVisible={isVisibleState}/>
             </View>
         )

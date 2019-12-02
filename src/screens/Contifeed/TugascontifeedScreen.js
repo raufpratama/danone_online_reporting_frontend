@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, TouchableWithoutFeedback, Alert, StyleSheet, Linking } from 'react-native'
+import { Text, View, FlatList, AsyncStorage, ActivityIndicator, Image, DatePickerAndroid, TouchableWithoutFeedback, Alert, StyleSheet, Linking } from 'react-native'
 import { connect } from 'react-redux'
 import axios from 'axios'
 import { Icon, Button } from 'react-native-elements'
@@ -25,6 +25,7 @@ const list_placeholder = require('../../assets/images/list_placeholder.png')
 const area = require('../../assets/utils/area')
 const environment = require('../../assets/utils/environment')
 const colors = require('../../assets/utils/colors')
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 
 class TugascontifeedScreen extends Component {
     constructor(props) {
@@ -71,7 +72,7 @@ class TugascontifeedScreen extends Component {
             })
             .then(async response=>{
                 console.log(response.data)
-                this._refresh(true)
+                this._refresh()
             })
             .catch(e=>{
                 console.log(`trerjadi error upload pdf ${e}`)
@@ -113,7 +114,7 @@ class TugascontifeedScreen extends Component {
         .then(response=>{
             console.log(response.data)
             this.setState({
-            wo_tasks:kondisi ? response.data.res.filter(ress=>ress.Status !== 3) : '',
+            wo_tasks:response.data.res.filter(ress=>ress.Status !== 3),
             loading:false,
             network:true
         })})
@@ -156,17 +157,45 @@ class TugascontifeedScreen extends Component {
         )
     }
 
+    _datePicker = async() => {
+        try {
+            const {action, year, month, day} = await DatePickerAndroid.open({
+              // Use `new Date()` for current date.
+              // May 25 2020. Month 0 is January.
+              date: new Date(),
+              mode:'calendar'
+            });
+            if (action !== DatePickerAndroid.dismissedAction) {
+              // Selected year, month (0-11), day
+            }
+          } catch ({code, message}) {
+            console.warn('Cannot open date picker', message);
+          }
+    }
+
     _renderFloatingAction = () => {
         if(this.props.isLogin) {
             if(this.props.userDetail.res.Jabatan == "MAINTENANCE PLANNER")
-            return (
+                return (
+                    <ActionButton buttonColor="rgba(231,76,60,1)">
+                        <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={this._document_Pick}>
+                            <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
+                        </ActionButton.Item>
+                    </ActionButton>
+                ) 
+            }   else if(managers.includes(this.props.userDetail.res.Jabatan)) {
                 <ActionButton buttonColor="rgba(231,76,60,1)">
-                    <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={this._document_Pick}>
+                    <ActionButton.Item buttonColor='#9b59b6' title="Export excel by Month" onPress={this._document_Pick}>
                         <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
                     </ActionButton.Item>
+                    <ActionButton.Item buttonColor='#9b59b6' title="Export excel by Year" onPress={this._document_Pick}>
+                        <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
+                    </ActionButton.Item>
+                    <ActionButton.Item buttonColor='#9b59b6' title="Search WO by date" onPress={this._datePicker}>
+                        <Icon type='ionicon' name="md-search" style={styles.actionButtonIcon} />
+                    </ActionButton.Item>
                 </ActionButton>
-            )
-        }
+            }
     }
 
     render() {
