@@ -27,7 +27,10 @@ import TugasmodulfillScreen from '../Modulfill/TugasmodulfillScreen'
 import RiwayatmodulfillScreen from '../Modulfill/RiwayatmodulfillScreen'
 import DetailtugasriwayatmodulfillScreen from '../Modulfill/DetailtugasriwayatmodulfillScreen'
 import UploadphotomodulfillScreen from '../Modulfill/UploadphotomodulfillScreen'
-import ManagerScreen from '../Manager/ManagerScreen'
+
+import ManagerModulfillScreen from '../Manager/ManagerModulfillScreen'
+import ManagerContifeedScreen from '../Manager/ManagerContifeedScreen'
+import ManagerContiformScreen from '../Manager/ManagerContiformScreen'
 
 const logos = [
     {
@@ -245,6 +248,144 @@ ModulfillStack.navigationOptions = ({navigation}) => {
     };
 };
 
+const ContifeedManagerStack = createStackNavigator({
+    Mainstack:{
+        screen:ManagerContifeedScreen,
+        navigationOptions:{
+            headerTitle:'Online Reporting',
+            headerTitleStyle:{
+                marginHorizontal:40,
+            },
+            headerLeft:(<Image source={danone_logo_online_report_logo} style={{width:72,height:72,marginHorizontal:10}} resizeMode='contain'/>),
+            headerStyle:{
+                elevation:0,
+            }
+        }
+    },
+    Detail:{
+        screen:DetailtugasriwayatcontifeedScreen,
+        navigationOptions:{
+            header:null
+        }
+    },
+    Uploadphoto:{
+        screen:UploadphotocontifeedScreen,
+        navigationOptions:{
+            header:null
+        }
+    }
+},{
+    initialRouteName:'Mainstack',
+})
+
+const ContiformManagerStack = createStackNavigator({
+    Mainstack:{
+        screen:ManagerContiformScreen,
+        navigationOptions:{
+            headerTitle:'Online Reporting',
+            headerTitleStyle:{
+                marginHorizontal:40,
+            },
+            headerLeft:(<Image source={danone_logo_online_report_logo} style={{width:72,height:72,marginHorizontal:10}} resizeMode='contain'/>),
+            headerStyle:{
+                elevation:0,
+            }
+        }
+    },
+    Detail:{
+        screen:DetailtugasriwayatcontiformScreen,
+        navigationOptions:{
+            header:null
+        }
+    },
+    Uploadphoto:{
+        screen:UploadphotocontiformScreen,
+        navigationOptions:{
+            header:null
+        }
+    }
+},{
+    initialRouteName:'Mainstack',
+})
+
+const ModulfillManagerStack = createStackNavigator({
+    Mainstack:{
+        screen:ManagerModulfillScreen,
+        navigationOptions:{
+            headerTitle:'Online Reporting',
+            headerTitleStyle:{
+                marginHorizontal:40,
+            },
+            headerLeft:(<Image source={danone_logo_online_report_logo} style={{width:72,height:72,marginHorizontal:10}} resizeMode='contain'/>),
+            headerStyle:{
+                elevation:0,
+            }
+        }
+    },
+    Detail:{
+        screen:DetailtugasriwayatmodulfillScreen,
+        navigationOptions:{
+            header:null
+        }
+    },
+    Uploadphoto:{
+        screen:UploadphotomodulfillScreen,
+        navigationOptions:{
+            header:null
+        }
+    }
+},{
+    initialRouteName:'Mainstack',
+})
+
+ContifeedManagerStack.navigationOptions = ({navigation}) => {
+    let tabBarVisible;
+    if (navigation.state.routes.length > 1) {
+        navigation.state.routes.map(route => {
+        if (route.routeName === "Detail" || route.routeName === 'Uploadphoto' ) {
+            tabBarVisible = false;
+        } else {
+            tabBarVisible = true;
+        }
+        });
+    }
+    return {
+        tabBarVisible
+    };
+};
+
+ContiformManagerStack.navigationOptions = ({navigation}) => {
+    let tabBarVisible;
+    if (navigation.state.routes.length > 1) {
+        navigation.state.routes.map(route => {
+        if (route.routeName === "Detail" || route.routeName === 'Uploadphoto') {
+            tabBarVisible = false;
+        } else {
+            tabBarVisible = true;
+        }
+        });
+    }
+    return {
+        tabBarVisible
+    };
+};
+
+ModulfillManagerStack.navigationOptions = ({navigation}) => {
+    let tabBarVisible;
+    if (navigation.state.routes.length > 1) {
+        navigation.state.routes.map(route => {
+        if (route.routeName === "Detail" || route.routeName === 'Uploadphoto') {
+            tabBarVisible = false;
+        } else {
+            tabBarVisible = true;
+        }
+        });
+    }
+    return {
+        tabBarVisible
+    };
+};
+
 const AppStack = createBottomTabNavigator({
     Contifeed:{
         screen:ContifeedStack,
@@ -285,10 +426,51 @@ const AppStack = createBottomTabNavigator({
         }
 })
 
+const ManagerStack = createBottomTabNavigator({
+    Contifeed:{
+        screen:ContifeedManagerStack,
+        navigationOptions: {
+            tabBarIcon: ({ focused,tintColor }) => {
+                // return <Icon type='material-community' name={focused ? 'home' : 'home-outline'} size={25} color={tintColor} />;
+                return <Image source={focused ? logos[0].active : logos[0].placeholder } style={{width:25,height:25}} resizeMode='contain'/>
+            }
+        }
+    },
+    Contiform:{
+        screen:ContiformManagerStack,
+        navigationOptions:({navigation}) => {
+            return {
+                    tabBarIcon: ({ focused,tintColor }) => {
+                        // return <Icon type='material-community' name={focused ? 'home' : 'home-outline'} size={25} color={tintColor} />;
+                        return <Image source={focused ? logos[2].active : logos[2].placeholder } style={{width:25,height:25}} resizeMode='contain'/>
+                    },
+            }
+        }
+    },
+    Modulfill:{
+        screen:ModulfillManagerStack,
+        navigationOptions: {
+            tabBarIcon: ({ focused,tintColor }) => {
+                // return <Icon type='material-community' name={focused ? 'home' : 'home-outline'} size={25} color={tintColor} />;
+                return <Image source={focused ? logos[1].active : logos[1].placeholder } style={{width:25,height:25}} resizeMode='contain'/>
+            }
+        }
+    },
+},{
+        tabBarOptions: {
+            activeTintColor: colors.primary_color,
+            inactiveTintColor: colors.abu_placeholder,
+            style:{
+                shadowOffset:{height:-1},shadowRadius:5,shadowOpacity:0.3,shadowColor:'#7a7a7a',borderTopWidth:0,elevation:10
+            },
+        }
+})
+
+
 const MainApp = createSwitchNavigator({
     Auth:AuthScreen,
     Login:LoginScreen,
-    Manager:ManagerScreen,
+    Manager:ManagerStack,
     App:AppStack
 }, {
     initialRouteName:'Auth',

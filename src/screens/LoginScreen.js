@@ -11,6 +11,7 @@ const agua = require('../assets/images/AGUA.png')
 const route_url = require('../assets/utils/urls')
 const colors = require('../assets/utils/colors')
 const environment = require('../assets/utils/environment')
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 
 class LoginScreen extends Component {
     constructor(props){
@@ -35,7 +36,7 @@ class LoginScreen extends Component {
                     this.props.user_Login(respon)
                     await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(respon))
                     this.setState({isVisible:false})
-                    this.props.navigation.navigate('App')
+                    this.props.navigation.navigate(managers.includes(response.data.res.Jabatan) ? 'Manager' : 'App')
                 } else {
                     this.setState({isVisible:false})
                     alert('NIK/password salah')

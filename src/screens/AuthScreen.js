@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { userLogin } from '../redux/actions/useractions'
 
 const environment = require('../assets/utils/environment')
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 
 class AuthScreen extends Component {
     constructor(props) {
@@ -18,7 +19,7 @@ class AuthScreen extends Component {
             const result_data = JSON.parse(get_data)
             console.log(result_data)
             this.props.user_Login(result_data)
-            this.props.navigation.navigate('App')
+            this.props.navigation.navigate(managers.includes(result_data.res.Jabatan) ? 'Manager' : 'App')
         } else {
             this.props.navigation.navigate('Login')
         }

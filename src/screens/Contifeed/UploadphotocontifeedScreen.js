@@ -128,7 +128,7 @@ class UploadphotocontifeedScreen extends Component {
                 // console.log(`ini wo props wo ${JSON.stringify(this.props.wo)}`)
                 update_FORM(wo_item_id)
                 // userDetail.wo_item_id = [...wo_item_id]
-                await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(userDetail))
+                // await AsyncStorage.setItem(environment.ASYNC_USER_TOKEN,JSON.stringify(userDetail))
                 this._editRedux(response.data.res.path,"ImgBefore")
             })
             .catch(e=>console.log(`terjadi kesalahan di upload foto before ${e}`))
