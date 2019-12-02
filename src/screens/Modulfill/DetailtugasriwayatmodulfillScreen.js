@@ -50,7 +50,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         console.log(wo.length > 0 && wo.id_wo == wo_tasks.ID)
         console.log(`id wo ${JSON.stringify(wo_tasks)}`)
         console.log(' ini wo di redux ' + JSON.stringify(wo))
-        axios.get(`${route_url.header}/wo/detail/${Object.keys(wo).length > 0 ? wo[0].WoNumber : wo_tasks.WoNumber}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+        axios.get(`${route_url.header}/wo/detail/${wo_tasks.WoNumber}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             const temp = response.data.res

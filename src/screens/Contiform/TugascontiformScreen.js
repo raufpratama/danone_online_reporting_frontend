@@ -74,8 +74,11 @@ class TugascontiformScreen extends Component {
                 data:form_data,
             })
             .then(async response=>{
-                console.log(response.data)
-                this._refresh()
+                if(response.res.info !== "WO EXISTS") {
+                    this._refresh()
+                } else {
+                    alert('wo sudah ada')
+                }
             })
             .catch(e=>{
                 console.log(`trerjadi error upload pdf ${e}`)

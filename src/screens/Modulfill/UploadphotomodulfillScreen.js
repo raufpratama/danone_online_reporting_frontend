@@ -55,6 +55,7 @@ class UploadphotocontifeedScreen extends Component {
         this.state = {
             header_title:props.navigation.getParam('header_title',''),
             wo_task:props.navigation.getParam('wo_task',''),
+            wo_tasks:props.navigation.getParam('wo_tasks',''),
             wo_number:props.navigation.getParam('wo_number',''),
             wo_item_id:props.navigation.getParam('wo_item_id',''),
             done_item:props.navigation.getParam('done_item',''),
@@ -110,6 +111,11 @@ class UploadphotocontifeedScreen extends Component {
     showMenu = (image) => {
         image == "image_before" ? this._menu.show() : this.menu_.show()
     };
+
+    _who_is_match_with_wo = () => {
+        console.log(this.props.userDetail.res.NIK == this.state.wo_tasks.Who)
+        return this.props.userDetail.res.NIK == this.state.wo_tasks.Who
+    }
 
     _uploadPhoto = () => {
         const { image_after, image_before,wo_number,form_data_before,form_data_after, wo_item_id, refresh  } = this.state;
@@ -186,14 +192,22 @@ class UploadphotocontifeedScreen extends Component {
                                 this.setState({isVisibleState:false})
                                 // console.log(this.props.wo)
                             })
-                            .catch(e=>console.log(`terjadi kesalahan di upload foto after ${e}`))
+                            .catch(e=>{
+                                if(e.response.status == 500) {
+                                    this.props.navigation.goBack()
+                                }
+                            })
                         } else {
                             refresh();
                             this.props.navigation.goBack();
                             this.setState({isVisibleState:false})
                         }
                     })
-                    .catch(e=>console.log(`terjadi kesalahan di upload foto before ${e}`))
+                    .catch(e=>{
+                        if(e.response.status == 500) {
+                            this.props.navigation.goBack()
+                        }
+                    })
                 } else {
                     this.props.navigation.goBack()
                 }
@@ -297,7 +311,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Text style={{fontWeight:'700',fontSize:14}}>Before</Text>
                             <Menu
                                 ref={this.setMenuRef}
-                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan)} type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
+                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan) || this._who_is_match_with_wo()} type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
                             > 
                                 <MenuItem onPress={()=>this.hideMenu("image_before")}>Hapus foto</MenuItem>
                             </Menu>
@@ -322,7 +336,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Text style={{fontWeight:'700',fontSize:14}}>After</Text>
                             <Menu
                                 ref={this.setMenuRef_}
-                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan)} type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
+                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan) || this._who_is_match_with_wo()} type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
                             >
                                 <MenuItem onPress={()=>this.hideMenu("image_after")}>Hapus foto</MenuItem>
                             </Menu>
@@ -343,7 +357,7 @@ class UploadphotocontifeedScreen extends Component {
                         </View>
                     </View>
                 </ScrollView>
-                {!this._isTeco() && !managers.includes(this.props.userDetail.res.Jabatan) ? (
+                {!this._isTeco() && !managers.includes(this.props.userDetail.res.Jabatan) && !this._who_is_match_with_wo() ? (
                     <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
                         <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
                     </View>

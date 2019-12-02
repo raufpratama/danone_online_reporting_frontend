@@ -12,6 +12,7 @@ import Badger from  '../sub_components/BadgeStatusWo';
 const ae_mp = ["ASSET ENGINEER","MAINTENANCE PLANNER"];
 const colors = require('../../assets/utils/colors')
 const route_url = require('../../assets/utils/urls')
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
 const HeaderTitle = ({subtitle}) => {
     return (
         <View>
@@ -50,7 +51,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         console.log(wo.length > 0 && wo.id_wo == wo_tasks.ID)
         console.log(`id wo ${JSON.stringify(wo_tasks)}`)
         console.log(' ini wo di redux ' + JSON.stringify(wo))
-        axios.get(`${route_url.header}/wo/detail/${Object.keys(wo).length > 0 ? wo[0].WoNumber : wo_tasks.WoNumber}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
+        axios.get(`${route_url.header}/wo/detail/${wo_tasks.WoNumber}`,{headers:{'Authorization':`Bearer ${userDetail.res.token}`}})
         .then(response=>{
             console.log(response.data)
             const temp = response.data.res
@@ -98,7 +99,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
                 <CheckBox checked={this.state.wo_tasks.Status == 3 || this.state.wo_tasks.Status == 4 || item.ImgBefore !== null && item.ImgAfter !==null} onPress={()=>{
-                    this.props.navigation.navigate('Uploadphoto',{status:this.state.wo_tasks.Status,refresh:this._refresh,general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})
+                    this.props.navigation.navigate('Uploadphoto',{status:this.state.wo_tasks.Status,wo_tasks:this.state.wo_tasks,refresh:this._refresh,general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})
                 }} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
             </View>
         )
@@ -236,7 +237,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={(wo_tasks.Status == 1 || wo_tasks.Status == 3) && !this._isTeco() ? this._renderItemTugas: ae_mp.includes(userDetail.res.Jabatan) ? this._renderItemTugas : this._renderItemTugasCheckbox}
+                                    renderItem={managers.includes(this.props.userDetail.res.Jabatan) ? this._renderItemTugasCheckbox : (wo_tasks.Status == 1 || wo_tasks.Status == 3) && !this._isTeco() ? this._renderItemTugas: ae_mp.includes(userDetail.res.Jabatan) ? this._renderItemTugas : this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
