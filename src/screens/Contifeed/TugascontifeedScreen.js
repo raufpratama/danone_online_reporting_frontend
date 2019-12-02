@@ -175,7 +175,7 @@ class TugascontifeedScreen extends Component {
 
     _renderFloatingAction = () => {
         if(this.props.isLogin) {
-            if(this.props.userDetail.res.Jabatan == "MAINTENANCE PLANNER")
+            if(this.props.userDetail.res.Jabatan == "MAINTENANCE PLANNER") {
                 return (
                     <ActionButton buttonColor="rgba(231,76,60,1)">
                         <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={this._document_Pick}>
@@ -184,18 +184,21 @@ class TugascontifeedScreen extends Component {
                     </ActionButton>
                 ) 
             }   else if(managers.includes(this.props.userDetail.res.Jabatan)) {
-                <ActionButton buttonColor="rgba(231,76,60,1)">
-                    <ActionButton.Item buttonColor='#9b59b6' title="Export excel by Month" onPress={this._document_Pick}>
-                        <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
-                    </ActionButton.Item>
-                    <ActionButton.Item buttonColor='#9b59b6' title="Export excel by Year" onPress={this._document_Pick}>
-                        <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
-                    </ActionButton.Item>
-                    <ActionButton.Item buttonColor='#9b59b6' title="Search WO by date" onPress={this._datePicker}>
-                        <Icon type='ionicon' name="md-search" style={styles.actionButtonIcon} />
-                    </ActionButton.Item>
-                </ActionButton>
+                return (
+                    <ActionButton buttonColor="rgba(231,76,60,1)">
+                        <ActionButton.Item buttonColor='#9b59b6' title="Export excel by Month" onPress={this._document_Pick}>
+                            <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
+                        </ActionButton.Item>
+                        <ActionButton.Item buttonColor='#9b59b6' title="Export excel by Year" onPress={this._document_Pick}>
+                            <Icon type='ionicon' name="md-create" style={styles.actionButtonIcon} />
+                        </ActionButton.Item>
+                        <ActionButton.Item buttonColor='#9b59b6' title="Search WO by date" onPress={this._datePicker}>
+                            <Icon type='ionicon' name="md-search" style={styles.actionButtonIcon} />
+                        </ActionButton.Item>
+                    </ActionButton>
+                )
             }
+    }
     }
 
     render() {
