@@ -185,12 +185,23 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         console.log(`ini detail wo ${JSON.stringify(detail_wo)}`)
         console.log(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`)
         console.log(`ini kondisi ketika wo submit ${(wo_tasks.Status == 2 || wo_tasks.Status == 1) && detail_wo.findIndex(wo_task=>wo_task.ImgBefore ==null && wo_task.ImgAfter == null) < 0}`)
-        if((wo_tasks.Status == 2 || wo_tasks.Status == 1) && detail_wo.findIndex(wo_task=>wo_task.ImgBefore ==null && wo_task.ImgAfter == null) < 0) {
+        if(wo_tasks.Status == 1) {
             this.setState({isVisibleState:true})
-            axios.patch(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
+            axios.patch(`${route_url.header}/wo/accept/${wo_tasks.WoNumber}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
             .then(response=>{
                 console.log(response.data)
-                alert(`Work order berubah Status menjadi ${wo_tasks.Status == 1 ? 'dikerjakan':'Submitted'}`)
+                alert(`Work order berubah Status menjadi dikerjakan`)
+                refresh()
+                this.setState({isVisibleState:false})
+                this.props.navigation.goBack()
+            })
+            .catch(e=>console.log(`terjadi kesalahan ${e}`))
+        } else if(wo_tasks.Status == 2 && detail_wo.findIndex(wo_task=>wo_task.ImgBefore ==null && wo_task.ImgAfter == null) < 0) {
+            this.setState({isVisibleState:true})
+            axios.patch(`${route_url.header}/wo/close/${wo_tasks.WoNumber}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
+            .then(response=>{
+                console.log(response.data)
+                alert(`Work order berubah Status menjadi Submitted`)
                 refresh()
                 this.setState({isVisibleState:false})
                 this.props.navigation.goBack()
