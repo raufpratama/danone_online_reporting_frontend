@@ -237,7 +237,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={managers.includes(this.props.userDetail.res.Jabatan) ? this._renderItemTugasCheckbox : (wo_tasks.Status == 1 || wo_tasks.Status == 3) ? this._renderItemInformasi : this._renderItemTugasCheckbox}
+                                    renderItem={managers.includes(this.props.userDetail.res.Jabatan) ? this._renderItemTugasCheckbox : (wo_tasks.Status == 1 || wo_tasks.Status == 3) ? this._renderItemTugas : this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
