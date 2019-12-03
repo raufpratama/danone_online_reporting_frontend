@@ -11,7 +11,7 @@ const agua = require('../assets/images/AGUA.png')
 const route_url = require('../assets/utils/urls')
 const colors = require('../assets/utils/colors')
 const environment = require('../assets/utils/environment')
-const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 
 class LoginScreen extends Component {
     constructor(props){

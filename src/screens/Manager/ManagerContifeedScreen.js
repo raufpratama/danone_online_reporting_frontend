@@ -28,7 +28,7 @@ const list_placeholder = require('../../assets/images/list_placeholder.png')
 const area = require('../../assets/utils/area')
 const environment = require('../../assets/utils/environment')
 const colors = require('../../assets/utils/colors')
-const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 
 class ManagerContifeedScreen extends Component {
     constructor(props) {

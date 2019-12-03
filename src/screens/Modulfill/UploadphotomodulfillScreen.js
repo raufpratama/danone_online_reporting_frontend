@@ -13,7 +13,7 @@ import { updateWO, updateFORM } from '../../redux/actions/formwoactions'
 const colors = require('../../assets/utils/colors')
 const plus = require('../../assets/images/plus.png')
 const route_url = require('../../assets/utils/urls')
-const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 const options = {
     storageOptions: {
         skipBackup: true,

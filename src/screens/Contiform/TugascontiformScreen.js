@@ -27,7 +27,7 @@ const list_placeholder = require('../../assets/images/list_placeholder.png')
 const area = require('../../assets/utils/area')
 const environment = require('../../assets/utils/environment')
 const colors = require('../../assets/utils/colors')
-const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 
 class TugascontiformScreen extends Component {
     constructor(props) {
@@ -74,7 +74,7 @@ class TugascontiformScreen extends Component {
                 data:form_data,
             })
             .then(async response=>{
-                if(response.res.info !== "WO EXISTS") {
+                if(response.data.res.info !== "WO EXISTS") {
                     this._refresh()
                 } else {
                     alert('wo sudah ada')

@@ -13,7 +13,7 @@ import { updateWO, updateFORM } from '../../redux/actions/formwoactions'
 const colors = require('../../assets/utils/colors')
 const plus = require('../../assets/images/plus.png')
 const route_url = require('../../assets/utils/urls')
-const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 const options = {
     storageOptions: {
         skipBackup: true,
@@ -311,7 +311,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Text style={{fontWeight:'700',fontSize:14}}>Before</Text>
                             <Menu
                                 ref={this.setMenuRef}
-                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan) || this._who_is_match_with_wo()} type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
+                                button={<Icon type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
                             > 
                                 <MenuItem onPress={()=>this.hideMenu("image_before")}>Hapus foto</MenuItem>
                             </Menu>
@@ -336,7 +336,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Text style={{fontWeight:'700',fontSize:14}}>After</Text>
                             <Menu
                                 ref={this.setMenuRef_}
-                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan) || this._who_is_match_with_wo()} type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
+                                button={<Icon type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
                             >
                                 <MenuItem onPress={()=>this.hideMenu("image_after")}>Hapus foto</MenuItem>
                             </Menu>
@@ -357,11 +357,9 @@ class UploadphotocontifeedScreen extends Component {
                         </View>
                     </View>
                 </ScrollView>
-                {!managers.includes(this.props.userDetail.res.Jabatan) && !this._who_is_match_with_wo() ? (
-                    <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
-                        <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
-                    </View>
-                ) : null}
+                <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
+                    <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
+                </View>
                 <LoadingState isVisible={isVisibleState}/>
                 <ImageView
                     images={images}

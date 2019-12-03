@@ -12,7 +12,7 @@ import Badger from  '../sub_components/BadgeStatusWo';
 const ae_mp = ["ASSET ENGINEER","MAINTENANCE PLANNER"];
 const colors = require('../../assets/utils/colors')
 const route_url = require('../../assets/utils/urls')
-const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 const HeaderTitle = ({subtitle}) => {
     return (
         <View>
@@ -237,7 +237,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={managers.includes(this.props.userDetail.res.Jabatan) ? this._renderItemTugasCheckbox : (wo_tasks.Status == 1 || wo_tasks.Status == 3) && !this._isTeco() ? this._renderItemTugas: ae_mp.includes(userDetail.res.Jabatan) ? this._renderItemTugas : this._renderItemTugasCheckbox}
+                                    renderItem={managers.includes(this.props.userDetail.res.Jabatan) ? this._renderItemTugasCheckbox : (wo_tasks.Status == 1 || wo_tasks.Status == 3) ? this._renderItemInformasi : this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
@@ -245,7 +245,7 @@ class DetailtugasriwayatcontifeedScreen extends Component {
                         </View>
                     )}
                 </ScrollView>
-                {(wo_tasks.Status == 1 || wo_tasks.Status == 2) && !this._isTeco() && this._who_is_match_with_wo() && !ae_mp.includes(userDetail.res.Jabatan)? (
+                {(wo_tasks.Status == 1 || wo_tasks.Status == 2)  && this._who_is_match_with_wo() && !ae_mp.includes(userDetail.res.Jabatan)? (
                     <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
                         <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks.Status == 1 ? 'Kerjakan':'Submit'}/>
                     </View>

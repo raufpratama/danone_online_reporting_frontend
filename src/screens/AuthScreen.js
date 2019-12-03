@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { userLogin } from '../redux/actions/useractions'
 
 const environment = require('../assets/utils/environment')
-const managers = ["PLANT MANAGER","ENGINEERING MANAGER","ASSET ENGINEER","MANUFACTURING MANAGER"]
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 
 class AuthScreen extends Component {
     constructor(props) {
