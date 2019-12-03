@@ -12,6 +12,7 @@ import Badger from  '../sub_components/BadgeStatusWo';
 const ae_mp = ["ASSET ENGINEER","MAINTENANCE PLANNER"];
 const colors = require('../../assets/utils/colors')
 const route_url = require('../../assets/utils/urls')
+const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 const HeaderTitle = ({subtitle}) => {
     return (
         <View>
@@ -21,7 +22,7 @@ const HeaderTitle = ({subtitle}) => {
     )
 }
 
-class DetailtugasriwayatcontiformScreen extends Component {
+class DetailtugasriwayatcontifeedScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -98,7 +99,7 @@ class DetailtugasriwayatcontiformScreen extends Component {
         return (
             <View style={{flexDirection:'row',paddingRight:19}}>
                 <CheckBox checked={this.state.wo_tasks.Status == 3 || this.state.wo_tasks.Status == 4 || item.ImgBefore !== null && item.ImgAfter !==null} onPress={()=>{
-                    this.props.navigation.navigate('Uploadphoto',{status:this.state.wo_tasks.Status,refresh:this._refresh,general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})
+                    this.props.navigation.navigate('Uploadphoto',{status:this.state.wo_tasks.Status,wo_tasks:this.state.wo_tasks,refresh:this._refresh,general_wo:this._filterObject(item.ID),header_title:'Upload photo',done_item:this._doneItem,wo_number:item.WoNumber,wo_item_id:item.ID,image_before:item.imgBefore,image_after:item.imgAfter,wo_task:item.Task})
                 }} containerStyle={{backgroundColor:'transparent',paddingRight:19,borderWidth:0}} title={<Text numberOfLines={3} style={{marginVertical:5,textAlign:'justify'}}>{item.Task}</Text>}/>
             </View>
         )
@@ -236,7 +237,7 @@ class DetailtugasriwayatcontiformScreen extends Component {
                                 <Divider style={{marginVertical:14,backgroundColor:colors.abu_placeholder}}/>
                                 <FlatList
                                     data={detail_wo}
-                                    renderItem={(wo_tasks.Status == 1 || wo_tasks.Status == 3) && !this._isTeco() ? this._renderItemTugas: ae_mp.includes(userDetail.res.Jabatan) ? this._renderItemTugas : this._renderItemTugasCheckbox}
+                                    renderItem={managers.includes(this.props.userDetail.res.Jabatan) ? this._renderItemTugasCheckbox : (wo_tasks.Status == 1 || wo_tasks.Status == 3) ? this._renderItemInformasi : this._renderItemTugasCheckbox}
                                     keyExtractor={(item,id)=>id.toString()}
                                 />
                             </View>
@@ -244,7 +245,7 @@ class DetailtugasriwayatcontiformScreen extends Component {
                         </View>
                     )}
                 </ScrollView>
-                {(wo_tasks.Status == 1 || wo_tasks.Status == 2) && !this._isTeco() && this._who_is_match_with_wo() && !ae_mp.includes(userDetail.res.Jabatan)? (
+                {(wo_tasks.Status == 1 || wo_tasks.Status == 2)  && this._who_is_match_with_wo() && !ae_mp.includes(userDetail.res.Jabatan)? (
                     <View style={{paddingHorizontal:15,paddingVertical:12,backgroundColor:colors.putih,elevation:4}}>
                         <Button onPress={this._alertAccept} buttonStyle={{borderRadius:10,backgroundColor:wo_tasks.Status == 1 ? colors.kuning : colors.primary_color}} title={wo_tasks.Status == 1 ? 'Kerjakan':'Submit'}/>
                     </View>
@@ -271,4 +272,4 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-export default connect(mapStateToProps,mapDispatchToProps)(DetailtugasriwayatcontiformScreen)
+export default connect(mapStateToProps,mapDispatchToProps)(DetailtugasriwayatcontifeedScreen)

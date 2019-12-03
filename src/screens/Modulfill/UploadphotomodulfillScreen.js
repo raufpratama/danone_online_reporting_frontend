@@ -357,11 +357,9 @@ class UploadphotocontifeedScreen extends Component {
                         </View>
                     </View>
                 </ScrollView>
-                {!this._isTeco() && !managers.includes(this.props.userDetail.res.Jabatan) && !this._who_is_match_with_wo() ? (
-                    <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
-                        <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
-                    </View>
-                ) : null}
+                <View style={{paddingHorizontal:15,position:'absolute',bottom:0,width:'100%',paddingVertical:12,backgroundColor:colors.putih,elevation:4,alignSelf:'flex-end'}}>
+                    <Button onPress={this._uploadPhoto} buttonStyle={{borderRadius:10,backgroundColor:colors.primary_color}} title='Upload photo'/>
+                </View>
                 <LoadingState isVisible={isVisibleState}/>
                 <ImageView
                     images={images}

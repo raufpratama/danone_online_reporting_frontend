@@ -29,7 +29,7 @@ const environment = require('../../assets/utils/environment')
 const colors = require('../../assets/utils/colors')
 const managers = ["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"]
 
-class TugascontifeedScreen extends Component {
+class TugasmodulfillScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -264,4 +264,4 @@ const styles = StyleSheet.create({
     },
   });
 
-export default connect(mapStateToProps,mapDispatchToProps)(TugascontifeedScreen)
+export default connect(mapStateToProps,mapDispatchToProps)(TugasmodulfillScreen)
