@@ -1,0 +1,3 @@
+const roles = {
+    managers:["PLANT MANAGER","ENGINEERING MANAGER","MANUFACTURING MANAGER"],
+}
