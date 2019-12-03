@@ -184,8 +184,8 @@ class DetailtugasriwayatcontifeedScreen extends Component {
         console.log(userDetail)
         console.log(`ini detail wo ${JSON.stringify(detail_wo)}`)
         console.log(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`)
-        console.log(`ini kondisi ketika wo submit ${(wo_tasks.Status == 2 || wo_tasks.Status == 1) && detail_wo.filter(wo_task=>wo_task.ImgBefore ==null && wo_task.ImgAfter == null).length < 1}`)
-        if((wo_tasks.Status == 2 || wo_tasks.Status == 1) && detail_wo.filter(wo_task=>wo_task.ImgBefore ==null && wo_task.ImgAfter == null).length < 1) {
+        console.log(`ini kondisi ketika wo submit ${(wo_tasks.Status == 2 || wo_tasks.Status == 1) && detail_wo.findIndex(wo_task=>wo_task.ImgBefore ==null && wo_task.ImgAfter == null) < 0}`)
+        if((wo_tasks.Status == 2 || wo_tasks.Status == 1) && detail_wo.findIndex(wo_task=>wo_task.ImgBefore ==null && wo_task.ImgAfter == null) < 0) {
             this.setState({isVisibleState:true})
             axios.patch(`${route_url.header}/wo/${wo_tasks.Status == 1 ? 'accept' : 'close'}/${wo_tasks.WoNumber}`,{},{headers:{'Content-Type':'application/json','Authorization':`Bearer ${userDetail.res.token}`}})
             .then(response=>{

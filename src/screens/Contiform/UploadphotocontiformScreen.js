@@ -292,8 +292,8 @@ class UploadphotocontifeedScreen extends Component {
         const { wo_task, image_before, image_after, header_title, image_placeholder, isVisibleState } = this.state;
         const images = [{source:{uri:image_before},title:'Image Before'},{source:{uri:image_after},title:'Image After'}]
         const { ImgBefore, ImgAfter } = this.props.navigation.getParam('general_wo','')
-        const edit_ImgBefore = `${route_url.header}${ImgBefore !== null ? ImgBefore.replace('.',''): ''}`
-        const edit_ImgAfter = `${route_url.header}${ImgAfter !== null ? ImgBefore.replace('.',''): ''}`
+        // const edit_ImgBefore = `${route_url.header}${ImgBefore !== null ? ImgBefore.replace('.',''): ''}`
+        // const edit_ImgAfter = `${route_url.header}${ImgAfter !== null ? ImgBefore.replace('.',''): ''}`
         return (
             <View style={{flex:1,backgroundColor:colors.background_screen}}>
                 <Header
@@ -311,7 +311,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Text style={{fontWeight:'700',fontSize:14}}>Before</Text>
                             <Menu
                                 ref={this.setMenuRef}
-                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan) || this._who_is_match_with_wo()} type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
+                                button={<Icon disabled={this.state.status == 3 || this.state.status ==4} type='ionicon' onPress={()=>this.showMenu("image_before")} name='ios-more' size={30}/>}
                             > 
                                 <MenuItem onPress={()=>this.hideMenu("image_before")}>Hapus foto</MenuItem>
                             </Menu>
@@ -336,7 +336,7 @@ class UploadphotocontifeedScreen extends Component {
                             <Text style={{fontWeight:'700',fontSize:14}}>After</Text>
                             <Menu
                                 ref={this.setMenuRef_}
-                                button={<Icon disabled={this.state.status == 4 || managers.includes(this.props.userDetail.res.Jabatan) || this._who_is_match_with_wo()} type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
+                                button={<Icon disabled={this.state.status == 3 || this.state.status ==4} type='ionicon' onPress={()=>this.showMenu("image_after")} name='ios-more' size={30}/>}
                             >
                                 <MenuItem onPress={()=>this.hideMenu("image_after")}>Hapus foto</MenuItem>
                             </Menu>
