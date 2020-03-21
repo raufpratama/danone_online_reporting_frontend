@@ -29,7 +29,7 @@ class LoginScreen extends Component {
         if(NIK.length > 0 && password.length >0) {
             axios.post(`${route_url.header}/user/login`,{NIK,Password:password})
             .then(async response=>{
-                    console.log(response.data)
+                    //console.log(response.data)
                     const respon = response.data
                     respon.res.nik = NIK
                     this.props.user_Login(respon)

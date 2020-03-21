@@ -39,6 +39,7 @@ class ManagerContifeedScreen extends Component {
             network:true,
             isVisibleExportModal:false,
             isVisibleSearchWoTask:false,
+            areaEndpoint:'',
         }
     }
 
@@ -219,6 +220,7 @@ class ManagerContifeedScreen extends Component {
     }
 
     _handleSearchWoTaskModal = () => {
+        this.setState({areaEndpoint:area.contifeed})
         this.setState({isVisibleSearchWoTask:!this.state.isVisibleSearchWoTask})
     }
 
@@ -289,7 +291,7 @@ class ManagerContifeedScreen extends Component {
                 {this._renderFloatingAction()}
                 <Text onPress={this._alertLogout} style={{color:colors.abu_placeholder,textDecorationLine:'underline',alignSelf:'center',paddingBottom:20}}>Logout</Text>
                 <ExportexceldateModal isVisible={this.state.isVisibleExportModal} handlemodal={this._handleExportExcelModal}/>
-                <SearchbydateModal isVisible={this.state.isVisibleSearchWoTask} handlemodal={this._handleSearchWoTaskModal} handlesearch={this._handleSearchWoTask}/>
+                <SearchbydateModal searchEndpoint={this.state.areaEndpoint} isVisible={this.state.isVisibleSearchWoTask} handlemodal={this._handleSearchWoTaskModal} handlesearch={this._handleSearchWoTask}/>
             </View>
         )
     }

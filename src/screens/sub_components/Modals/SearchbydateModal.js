@@ -77,7 +77,7 @@ class SearchbydateModal extends Component {
     _search = () => {
         if(this.state.start_date.length > 0 && this.state.end_date.length > 0) {
             this.setState({isloading:true})
-            axios.get(`${route_header.header}/wo/list/${area.modulfill}/${this.state.start_date}/to/${this.state.end_date}`,{headers:{'Authorization':`Bearer ${this.props.userDetail.res.token}`}})
+            axios.get(`${route_header.header}/wo/list/${this.props.searchEndpoint}/${this.state.start_date}/to/${this.state.end_date}`,{headers:{'Authorization':`Bearer ${this.props.userDetail.res.token}`}})
             .then(response=>{
                 this.setState({isloading:false})
                 this.props.handlesearch(response.data.res)
