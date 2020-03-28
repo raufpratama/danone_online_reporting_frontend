@@ -102,8 +102,7 @@ class TugascontifeedScreen extends Component {
                 onPress: () => console.log('Cancel Pressed'),
                 style: 'cancel',
             },
-            ],
-            {cancelable: false},
+            ]
         )
     }
 
